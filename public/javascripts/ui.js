@@ -115,8 +115,7 @@ function buildCardElements(changeSet)
 
 function updateUI()
 {
-	//if(lastNumPlayers != getNumPlayers() || lastTrickHistorySize != getTrickCardsHistory().length)
-		updatePlayerList(game.players);
+	updatePlayerList(game.players);
 		
 	updateStatusMessage();
 	
@@ -136,6 +135,7 @@ function updateUI()
 	
 	if(getStage() == "POST_TRICK" && !checkedIn())
 		$("#checkInButton").show();
+		
 	
 	updateHand();
 	updateTrick();
@@ -237,18 +237,29 @@ function updatePlayerList(players)
 	$('#players').html("");
 	$.each(players, function(i, p){
 		var player = getPlayerByUserId(p.id);
-
 		var playerDiv = $('<div class="player">');
 		playerDiv.attr('playerId', p.id);
+		if(p.id == getCurrentTrickPlayerId())
+			playerDiv.addClass('active');
 		var scoreDiv = $('<div class="playerTrickScore">');
 		scoreDiv.text(player.trickPoints||0);
 		var nameDiv = $('<div class="playerName">');
 		nameDiv.text(p.name);
 		var gameScoreDiv = $('<div class="playerGameScore">');
 		gameScoreDiv.text(player.gamePoints||0);
+		var declareDiv = $('<div class="declaration">');
+		if(p.id == getPublicDeclarationUserId())
+			declareDiv.text(getPublicDeclarationString());
 		playerDiv.append(nameDiv);
 		playerDiv.append(gameScoreDiv);
 		playerDiv.append(scoreDiv);
+		playerDiv.append(declareDiv);
 		$('#players').append(playerDiv);
 	});
+}
+
+function showOverlay(overlay)
+{
+	$("#mask").fadeTo(500, 0.25);
+	$(overlay).show();
 }

@@ -20,6 +20,31 @@ function getStage()
 	return Stages[game.gameState.stage];
 }
 
+function getPublicDeclarationUserId()
+{
+	return game.gameState.declarePlayer;
+}
+
+function getCurrentTrickPlayerId()
+{
+	return game.gameState.trickTurnPlayer;
+}
+
+function getPlayerDiv(playerId)
+{
+	return $('.player[playerid='+playerId+']');
+}
+
+function getPublicDeclarationString()
+{
+	return getPublicDeclaration();
+}
+
+function getPublicDeclaration()
+{
+	return game.gameState.publicDeclaration;
+}
+
 function getDealerName()
 {
 	var dealerId = game.gameState.currentDealer;

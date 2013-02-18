@@ -32,7 +32,7 @@ public class SpitzerGameState
 
 	public Integer maxPlayers;
 	public Integer currentDealer;
-	public Integer trickTurnPlayer;
+	public Integer currentPlayer;
 	public Set<Integer> blackTeam;
 	public Set<Integer> otherTeam;
 	public Map<Card, Integer> trickPointsPerCard;
@@ -58,30 +58,88 @@ public class SpitzerGameState
 			this.newTrick();
 			// If there was no winner in the last trick (ie, first trick), go to left of deal, else use the last winner
 			if(this.trickWinnerHistory.isEmpty())
-				this.trickTurnPlayer = getNextPlayer(this.currentDealer).userId;
+				this.currentPlayer = getNextPlayer(this.currentDealer).userId;
 			else
-				this.trickTurnPlayer = this.trickWinnerHistory.get(trickWinnerHistory.size() - 1);
+				this.currentPlayer = this.trickWinnerHistory.get(trickWinnerHistory.size() - 1);
 			
 			break;
 			
 		case POST_TRICK:
-			this.stage = GameStage.POST_TRICK;
-			
-			// Determine the trick winning card
-			Card highestCard = SpitzerDeck.getWinningCard(trickCards.keySet());
-			Integer winner = trickCards.get(highestCard);
-			getPlayerByUser(winner).trickPoints = SpitzerDeck.getPointsForCards(trickCards.keySet());
-			this.trickPointsPerCard = SpitzerDeck.getPointsPerCards(trickCards.keySet());
-			this.trickWinnerHistory.add(trickCards.get(highestCard));
-			this.trickPointHistory.add(SpitzerDeck.getPointsForCards(trickCards.keySet()));
-			this.trickCardsHistory.add(trickCardsOrdered);
-			this.trickWinningCardHistory.add(highestCard);
-			this.playerCheckins = Sets.newHashSet();
+			this.completeTrick();
 			break;
-			
+		case POST_ROUND:
+			this.completeTrick();
+			this.distributeGamePoints();
+			break;
+		case DECLARATION:
+			evaluateDeclarations();
+			break;
+		case WAITING_TO_DEAL:
+			this.currentPlayer = this.currentDealer;
+			break;
 		}
 		
 		this.stage = newStage;
+	}
+
+	private void distributeGamePoints()
+	{
+		// Using the point history, distribute the game points accordingly
+		Integer totalTrickPoints = getTotalTrickPointsForPlayers(this.blackTeam);
+		Integer totalTricksWon = getTotalTricksWonByPlayers(this.blackTeam);
+
+		// TODO
+	}
+
+	private void increasePlayersGamePoints(Collection<Integer> userIds, Integer points)
+	{
+		for(SpitzerPlayer player : players)
+		{
+			if(userIds.contains(player.userId))
+				player.gamePoints += points;
+		}
+	}
+
+	private Integer getTotalTricksWonByPlayers(Collection<Integer> userIds)
+	{
+		Integer total = 0;
+		
+		for(Integer winnerId : this.trickWinnerHistory)
+		{
+			if(userIds.contains(winnerId))
+				total++;
+		}
+
+		return total;
+	}
+
+	private Integer getTotalTrickPointsForPlayers(Collection<Integer> userIds)
+	{
+		Integer total = 0;
+
+		for(int i = 0; i < this.trickWinnerHistory.size(); i++)
+		{
+			Integer trickWinner = this.trickWinnerHistory.get(i);
+
+			if(userIds.contains(trickWinner))
+				total += this.trickPointHistory.get(i);
+		}
+
+		return total;
+	}
+
+	// Called after a trick is over, or a round is over
+	private void completeTrick()
+	{
+		Card highestCard = SpitzerDeck.getWinningCard(trickCards.keySet());
+		Integer winner = trickCards.get(highestCard);
+		getPlayerByUser(winner).trickPoints = SpitzerDeck.getPointsForCards(trickCards.keySet());
+		this.trickPointsPerCard = SpitzerDeck.getPointsPerCards(trickCards.keySet());
+		this.trickWinnerHistory.add(trickCards.get(highestCard));
+		this.trickPointHistory.add(SpitzerDeck.getPointsForCards(trickCards.keySet()));
+		this.trickCardsHistory.add(trickCardsOrdered);
+		this.trickWinningCardHistory.add(highestCard);
+		this.playerCheckins = Sets.newHashSet();
 	}
 	
 	public JsonNode playCard(User user, Card card)
@@ -94,8 +152,8 @@ public class SpitzerGameState
 			return ErrorUtils.error(GameError.INVALID_GAME_STAGE, this.stage);
 		if(!player.hand.hasCard(card))
 			return ErrorUtils.error(GameError.INVALID_CARD, player.hand,  card);
-		if(!trickTurnPlayer.equals(player.userId))
-			return ErrorUtils.error(GameError.OUT_OF_TURN, player.userId, trickTurnPlayer);
+		if(!currentPlayer.equals(player.userId))
+			return ErrorUtils.error(GameError.OUT_OF_TURN, player.userId, currentPlayer);
 		
 		// Validate the card placement
 		if(!validatePlayCard(player, card))
@@ -106,7 +164,7 @@ public class SpitzerGameState
 		trickCards.put(card, player.userId);
 		trickCardsOrdered.add(card);
 		
-		this.trickTurnPlayer = getNextPlayer(player).userId;
+		this.currentPlayer = getNextPlayer(player).userId;
 		
 		// Have all the players played a card?
 		if(trickCards.size() >= players.size())
@@ -125,9 +183,9 @@ public class SpitzerGameState
 		// Is everyone checked in?
 		if(this.playerCheckins.size() == this.players.size())
 		{
-			// Was that the last trick, then go to POST_GAME
+			// If we're out of cards, then the entire round is over
 			if(this.players.get(0).hand.isEmpty())
-				this.moveToStage(GameStage.POST_GAME);
+				this.moveToStage(GameStage.POST_ROUND);
 			else
 				this.moveToStage(GameStage.TRICK);
 		}
@@ -316,9 +374,8 @@ public class SpitzerGameState
 			}
 		}
 		
-		evaluateDeclarations();
 		
-		this.stage = GameStage.DECLARATION;
+		this.moveToStage(GameStage.DECLARATION);
 		
 		return null;
 	}
@@ -377,8 +434,8 @@ public class SpitzerGameState
 		}
 	}
 	
-	// Called when all tricks are played in a game, and we should setup a new game
-	public void newGame()
+	// Called when all tricks have been played for a dealing, set up a new dealing
+	public void newRound()
 	{
 		this.trickNumber = 0;
 		
@@ -402,18 +459,20 @@ public class SpitzerGameState
 		newTrick();
 	}
 	
+	// Called when an entirely new game is created
 	public void startGame(Game game)
 	{
 		this.players = Lists.newArrayList();
 		this.stage = GameStage.WAITING_FOR_PLAYERS;
 		this.maxPlayers = Game.NUM_PLAYERS;
 
-		newGame();
+		newRound();
 		
 		for(User userPlayer : game.players)
 		{
 			addPlayer(userPlayer);
 		}
+
 		// Host will be dealer to begin
 		this.currentDealer = game.hostUserId;
 	}
@@ -445,7 +504,7 @@ public class SpitzerGameState
 		this.players.add(player);
 		
 		if(this.players.size() >= Game.NUM_PLAYERS)
-			this.stage = GameStage.WAITING_FOR_DEAL;
+			this.moveToStage(GameStage.WAITING_FOR_DEAL);
 	}
 
 	public static SpitzerGameState fromJson(String jsonString)
@@ -461,7 +520,8 @@ public class SpitzerGameState
 		DECLARATION(3),
 		TRICK(4),
 		POST_TRICK(5),
-		POST_GAME(6);
+		POST_GAME(6),	// After a winner is found
+		POST_ROUND(7);	// After all tricks are played for a single deal
 		
 		private int id;
 		

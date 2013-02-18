@@ -5,36 +5,35 @@
 }
 
 #players {
-	background-image: linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
-	background-image: -o-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
-	background-image: -moz-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
-	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
-	background-image: -ms-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
-
-	background-image: -webkit-gradient(
-		linear,
-		left bottom,
-		left top,
-		color-stop(0.25, rgb(237,171,57)),
-		color-stop(0.63, rgb(255,207,125))
-	);
+	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	border-radius:5px;
+	clear:both;
+	height:100px;
 }
 
+.player.active {
+	background-image: linear-gradient(bottom, rgb(237,250,57) 25%,  rgb(237,171,57) 63%, rgb(255,207,125) 75%);
+	background-image: -webkit-linear-gradient(bottom, rgb(57,200,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+}
 
 .player {
-	margin:10px;
+	vertical-align:top;
+	margin:0;
+	padding:0;
 	display:inline-block;
-	padding:10px;
-	width:100px;
+	width:25%;
+	height:100%;
 	border-radius:5px;
 	border-width:2px;
-	border-style:solid;
+	border-color:#fA5;
+	border-right-style:solid;
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
 }
 
 .playerName {
 	font-weight:bold;
-	font-size:1em;
 	text-align:center;
 	margin-left:auto;
 	margin-right:auto;
@@ -80,8 +79,9 @@
 .card img {
 	width:100%;
 	height:100%;
-	box-shadow: 3px 3px 4px #000;
 	border-radius:5px;
+	margin:0;
+	padding:0;
 }
 
 .clear {
@@ -97,4 +97,15 @@ body {
 	background-repeat:repeat;
 	font-family:'Ubuntu',sans-serif;
 	color:#FFF;
+}
+
+#mask {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background-color:#000;
+	z-index:1000;
+	display:none;
 }
