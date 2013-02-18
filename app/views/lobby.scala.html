@@ -1,0 +1,57 @@
+@(game : Game)
+
+@main{
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/lobby.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/util.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/ui.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/requests.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/handlers.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/cards.js")"></script>
+	
+	<script type="text/javascript">
+		routes.getGameState = "@routes.GameController.state(game.id)";
+		routes.requestDeal = "@routes.StateController.deal(game.id)";
+		routes.requestDeclaration = "@routes.StateController.declare(game.id)";
+		routes.requestPlayCard = "@routes.StateController.playCard(game.id)";
+		routes.requestCheckIn = "@routes.StateController.checkIn(game.id)";
+		var IMAGE_EXTENSION = 'svg';
+		var CARD_IMAGE_PATH = "@routes.Assets.at("images/cards")"+"/";
+		
+		$(document).ready(function(){
+			beginPoll(@game.id);
+		});
+	</script>
+	
+	<div id="container">
+	
+	<h1>@game.name</h1>
+	
+	<table id="players">
+		<thead>
+			<tr>
+				<td>Players in Game</td>
+			</tr>
+		</thead>
+		<tbody id="playerList">
+		</tbody>
+	</table>
+	
+	<div id="trick">
+		<h3>In Play</h3>
+	</div>
+	
+	<div id="hand">
+		<h3>Your Hand</h3>
+
+	</div>
+	<br class="clear"/>
+	<div id="declarationMenu">
+	</div>
+	
+	<input id="dealButton" type="button" value="Deal">
+	<input id="checkInButton" type="button" value="Continue">
+	<br/>
+	<div id="statusMessage"></div>
+	
+	</div>
+}

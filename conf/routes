@@ -1,0 +1,58 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page - show login screen/list of games
+GET     /spitzer/                    			controllers.HomeController.index()
+
+
+#########################
+# GAME STATE
+#########################
+
+# Player wants to deal
+POST /spitzer/games/deal						controllers.StateController.deal(gameId : Int)
+
+# Player wants to declare
+POST /spitzer/games/declare						controllers.StateController.declare(gameId : Int)
+
+# Player wants to play a card
+POST /spitzer/games/playcard					controllers.StateController.playCard(gameId : Int)
+
+# Player wants to check in
+POST /spitzer/games/checkin						controllers.StateController.checkIn(gameId : Int)
+
+#########################
+# GAME
+#########################
+# Returns all active games
+GET		/spitzer/games/all						controllers.GameController.getAll()
+
+# User wishes to join a game
+GET  	/spitzer/games/join						controllers.GameController.join(gameId : Int)
+
+#User wishes to host a new game
+POST	/spitzer/games/host						controllers.GameController.host()
+
+# Get the game state, called by AJAX
+GET		/spitzer/games/state					controllers.GameController.state(gameId : Int)
+
+# User wishes to view the game
+GET		/spitzer/games/view						controllers.GameController.view(gameId : Int)
+
+
+
+#########################
+# USER
+#########################
+#User wants to create a new user
+POST	/spizter/users/create					controllers.UserController.create()
+
+#User wants to login
+POST	/spitzer/users/login					controllers.UserController.login()
+
+#Check user login
+GET		/spitzer/users/check					controllers.UserController.check()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

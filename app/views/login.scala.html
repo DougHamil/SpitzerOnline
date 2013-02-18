@@ -1,0 +1,17 @@
+@main{
+		<h1>Login</h1>
+		<form action="@routes.UserController.login" method="post">
+			<input type="text" name="username">
+			<input type="submit">
+		</form>
+		
+		<br/>
+		<h3>OR</h3>
+		<br/>
+		
+		<h3>Create New User</h3>
+		<form action="@routes.UserController.create" method="post">
+			<input type="text" name="username">
+			<input type="submit">
+		</form>
+}

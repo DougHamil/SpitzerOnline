@@ -1,0 +1,24 @@
+@(games : List[Game])
+
+@main{
+	<h1>Game Lobby</h1>
+	<form method="post" action="@routes.GameController.host()">
+		<input type="submit" value="Host Game">
+	</form>
+	<table>
+		<thead>
+			<tr>
+				<td>Name</td>
+				<td>Players</td>
+			</tr>
+		</thead>
+		<tbody>
+			@for(game <- games) {
+				<tr>
+					<td><a href="@routes.GameController.join(game.id)">@game.name</a></td>
+					<td>@game.getNumberOfPlayers()</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}

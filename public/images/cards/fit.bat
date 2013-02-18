@@ -1,0 +1,1 @@
+for /f "usebackq delims=|" %%f in (`dir /b "c:\Users\Doug\Desktop\MyPlayServer\Spitzer\public\images\cards"`) do inkscape --verb FitCanvasToDrawing --verb FileSave --verb FileClose %%f
