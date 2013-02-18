@@ -3,6 +3,58 @@
 	margin-left:auto;
 	margin-right:auto;
 }
+
+#players {
+	background-image: linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
+	background-image: -o-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
+	background-image: -moz-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
+	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
+	background-image: -ms-linear-gradient(bottom, rgb(237,171,57) 25%, rgb(255,207,125) 63%);
+
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0.25, rgb(237,171,57)),
+		color-stop(0.63, rgb(255,207,125))
+	);
+	border-radius:5px;
+}
+
+
+.player {
+	margin:10px;
+	display:inline-block;
+	padding:10px;
+	width:100px;
+	border-radius:5px;
+	border-width:2px;
+	border-style:solid;
+}
+
+.playerName {
+	font-weight:bold;
+	font-size:1em;
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.playerTrickScore {
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+	font-size:1.8em;
+	font-weight:bold;
+	color:#111;
+}
+
+.playerGameScore {
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+}
+
 #hand, #trick {
 	margin-left:auto;
 	margin-right:auto;

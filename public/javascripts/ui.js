@@ -1,6 +1,7 @@
 var lastCardHand = null;
 var lastTrickCards = null;
 var lastNumPlayers = 0;
+var lastTrickHistorySize = 0;
 
 function initializeUI()
 {
@@ -62,27 +63,31 @@ function buildTrickCardElements(trick)
 	});
 }
 
-function buildCardElements(hand)
+function buildCardElements(changeSet)
 {
-	$("#hand .card").remove();
-	$.each(hand, function(i, c){
-		$("#hand").append('<div class="card">');
+	// Remove any cards that shouldn't be shown
+	$("#hand .card").each(function(i, c){
+		if(changeSet.remove.indexOf($(c).attr('card')) != -1)
+			$(c).remove();
 	});
-	
-	// Make all hand cards draggable
-	$("#hand .card").each(function(i,c){
-		
-		$(c).draggable({
+
+	// Add any new cards
+	$.each(changeSet.add, function(i, c){
+
+		var newCard = $('<div class="card">');
+		newCard.attr('card', c);
+		$("#hand").append(newCard);
+
+		newCard.draggable({
 			revert:true,
-			//revertDuration:0,
 			stop:function(event, ui){
 				$(this).draggable('option', 'revert', true);
 			}
 		});
 		
-		$(c).html(getCardHtml(hand[i]));
+		newCard.html(getCardHtml(c));
 		
-		$(c).droppable({
+		newCard.droppable({
 			greedy:true,
 			accept:'#hand .card',
 			tolerance:'touch',
@@ -103,14 +108,16 @@ function buildCardElements(hand)
 	
 	// Update the size of the hand box
 	var totalHeight = $("#hand h3").height() * 3;
-	totalHeight += $("#hand .card").height() * Math.ceil((hand.length / 8));
+	totalHeight += $("#hand .card").height() * Math.ceil(($("#hand .card").length / 8));
 	
 	$("#hand").height(totalHeight);
 }
 
 function updateUI()
 {
-	updatePlayerList(game.players);
+	//if(lastNumPlayers != getNumPlayers() || lastTrickHistorySize != getTrickCardsHistory().length)
+		updatePlayerList(game.players);
+		
 	updateStatusMessage();
 	
 	$("#checkInButton").hide();
@@ -176,11 +183,12 @@ function updateHand()
 {
 	var hand = getPlayer().hand;
 	
-	if(handMatches(hand, lastCardHand))
+	var changeSet = getHandChangeSet(lastCardHand, hand);
+	if(changeSet.add.length == 0 && changeSet.remove.length==0)
 		return;
-	
+
+	buildCardElements(changeSet);
 	lastCardHand = hand;
-	buildCardElements(hand);
 }
 
 function updateStatusMessage()
@@ -226,8 +234,21 @@ function updateStatusMessage()
 
 function updatePlayerList(players)
 {
-	$('#playerList').html("");
+	$('#players').html("");
 	$.each(players, function(i, p){
-		$('#playerList').append($('<tr><td>'+p.name+'</td></tr>'));
+		var player = getPlayerByUserId(p.id);
+
+		var playerDiv = $('<div class="player">');
+		playerDiv.attr('playerId', p.id);
+		var scoreDiv = $('<div class="playerTrickScore">');
+		scoreDiv.text(player.trickPoints||0);
+		var nameDiv = $('<div class="playerName">');
+		nameDiv.text(p.name);
+		var gameScoreDiv = $('<div class="playerGameScore">');
+		gameScoreDiv.text(player.gamePoints||0);
+		playerDiv.append(nameDiv);
+		playerDiv.append(gameScoreDiv);
+		playerDiv.append(scoreDiv);
+		$('#players').append(playerDiv);
 	});
 }

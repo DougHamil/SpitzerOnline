@@ -69,7 +69,8 @@ public class SpitzerGameState
 			
 			// Determine the trick winning card
 			Card highestCard = SpitzerDeck.getWinningCard(trickCards.keySet());
-			
+			Integer winner = trickCards.get(highestCard);
+			getPlayerByUser(winner).trickPoints = SpitzerDeck.getPointsForCards(trickCards.keySet());
 			this.trickPointsPerCard = SpitzerDeck.getPointsPerCards(trickCards.keySet());
 			this.trickWinnerHistory.add(trickCards.get(highestCard));
 			this.trickPointHistory.add(SpitzerDeck.getPointsForCards(trickCards.keySet()));
@@ -369,6 +370,11 @@ public class SpitzerGameState
 		this.trickNumber++;
 		this.trickCards = Maps.newHashMap();
 		this.trickCardsOrdered = Lists.newArrayList();
+		
+		for(SpitzerPlayer player : players)
+		{
+			player.trickPoints = 0;
+		}
 	}
 	
 	// Called when all tricks are played in a game, and we should setup a new game

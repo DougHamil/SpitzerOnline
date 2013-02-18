@@ -4,6 +4,7 @@ function setStatusMessage(msg)
 	$("#statusMessage").html(msg);
 }
 
+
 function getNumPlayers()
 {
 	return game.gameState.players.length;
@@ -23,6 +24,30 @@ function getDealerName()
 {
 	var dealerId = game.gameState.currentDealer;
 	return getPlayerByUserId(dealerId).name;
+}
+
+function getHandChangeSet(current, target)
+{
+	if(!current)
+		return {add:target||[], remove:[]};
+	if(!target)
+		return {add:[], remove:current||[]};
+
+	var toRemove = [];
+	for(var card in current)
+	{
+		if(target.indexOf(current[card]) == -1)
+			toRemove.push(current[card]);
+	}
+
+	var toAdd = [];
+	for(var card in target)
+	{
+		if(current.indexOf(target[card]) == -1)
+			toAdd.push(target[card]);
+	}
+
+	return {add:toAdd, remove:toRemove};
 }
 
 function getTrickCards()
@@ -49,6 +74,11 @@ function getTrickTurnPlayer()
 function isPlayersTurn()
 {
 	return getStage() == 'TRICK' && game.userId == game.gameState.trickTurnPlayer;
+}
+
+function getTrickCardsHistory()
+{
+	return game.gameState.trickCardsHistory || [];
 }
 
 function getPlayerByUserId(userId)
