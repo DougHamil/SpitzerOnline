@@ -27,7 +27,7 @@ function getPublicDeclarationUserId()
 
 function getCurrentTrickPlayerId()
 {
-	return game.gameState.trickTurnPlayer;
+	return game.gameState.currentPlayer;
 }
 
 function getPlayerDiv(playerId)
@@ -93,12 +93,12 @@ function getTrickCardsAsMap()
 
 function getTrickTurnPlayer()
 {
-	return getPlayerByUserId(game.gameState.trickTurnPlayer);
+	return getPlayerByUserId(game.gameState.currentPlayer);
 }
 
 function isPlayersTurn()
 {
-	return getStage() == 'TRICK' && game.userId == game.gameState.trickTurnPlayer;
+	return getStage() == 'TRICK' && game.userId == game.gameState.currentPlayer;
 }
 
 function getTrickCardsHistory()

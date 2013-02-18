@@ -74,7 +74,7 @@ public class SpitzerGameState
 		case DECLARATION:
 			evaluateDeclarations();
 			break;
-		case WAITING_TO_DEAL:
+		case WAITING_FOR_DEAL:
 			this.currentPlayer = this.currentDealer;
 			break;
 		}
