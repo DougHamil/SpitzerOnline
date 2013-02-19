@@ -45,34 +45,34 @@ public class StateController extends Controller
 		
 		game.update();
 		
-		return ok(game.toJson());
+		return ok(game.toJson(user));
 	}
 	
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result declare(Integer gameId)
 	{
-    	Game game = GameController.getGameById(gameId);
-    	User user = UserController.getCurrentUser();
+		Game game = GameController.getGameById(gameId);
+		User user = UserController.getCurrentUser();
+		
+		if(!validateGame(game, user))
+			return redirect(controllers.routes.HomeController.index());
+		
+		JsonNode json = request().body().asJson();
+		if(json.findPath("declaration") == null)
+			return badRequest("Missing parameter [declaration]");
+		
+		String declaration = json.findPath("declaration").getTextValue();
+		
+		if(SpitzerDeclaration.valueOf(declaration) == null)
+			return badRequest("Invalid declaration: "+declaration);
+		
+		JsonNode error = game.getGameState().handleDeclaration(user, SpitzerDeclaration.valueOf(declaration));
+		if(error != null)
+			return badRequest(error);
+		
+		game.update();
     	
-    	if(!validateGame(game, user))
-    		return redirect(controllers.routes.HomeController.index());
-    	
-    	JsonNode json = request().body().asJson();
-    	if(json.findPath("declaration") == null)
-    		return badRequest("Missing parameter [declaration]");
-    	
-    	String declaration = json.findPath("declaration").getTextValue();
-    	
-    	if(SpitzerDeclaration.valueOf(declaration) == null)
-    		return badRequest("Invalid declaration: "+declaration);
-    	
-    	JsonNode error = game.getGameState().handleDeclaration(user, SpitzerDeclaration.valueOf(declaration));
-    	if(error != null)
-    		return badRequest(error);
-    	
-    	game.update();
-    	
-		return ok(game.toJson());
+		return ok(game.toJson(user));
 	}
 	
     public static Result checkIn(Integer gameId)
@@ -90,7 +90,7 @@ public class StateController extends Controller
     		return badRequest(error);
     		
     	game.update();
-    	return ok(game.toJson());
+    	return ok(game.toJson(user));
     }
 	
     public static Result deal(Integer gameId)
@@ -108,7 +108,7 @@ public class StateController extends Controller
     		return badRequest(error);
     		
     	game.update();
-    	return ok(game.toJson());
+    	return ok(game.toJson(user));
     }
     
     private static boolean validateGame(Game game, User user)

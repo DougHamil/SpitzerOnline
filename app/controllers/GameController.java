@@ -26,7 +26,12 @@ public class GameController extends Controller {
     public static Result state(Integer gameId)
     {
     	Game game = getGameById(gameId);
-    	return ok(game.toJson());
+
+	if(game == null)
+		return redirect(controllers.routes.HomeController.index());
+
+	User user = UserController.getCurrentUser();
+    	return ok(game.toJson(user));
     }
     
     public static Result join(Integer gameId)

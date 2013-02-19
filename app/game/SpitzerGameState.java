@@ -52,6 +52,18 @@ public class SpitzerGameState
 	public SpitzerDeclaration publicDeclaration;
 	public Integer declarePlayer;
 	
+	public SpitzerGameState sanitizeForUser(User user)
+	{
+		// Clear out all other players' hands
+		for(SpitzerPlayer player : players)
+		{
+			if(!player.userId.equals(user.id))
+				player.sanitize();
+		}
+
+		return this;
+	}
+	
 	private void moveToStage(GameStage newStage)
 	{
 		switch(newStage)

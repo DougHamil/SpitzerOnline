@@ -20,6 +20,15 @@ public class SpitzerPlayer
 	public List<Integer> gamePointHistory = Lists.newArrayList();
 	public SpitzerDeclaration activeDeclaration;
 	
+	// This method is called when this player is not the active player
+	// Remove all information that could be used to cheat
+	public void sanitize()
+	{
+		this.hand = null;
+		this.declarations = null;
+		this.activeDeclaration = null;
+	}
+	
 	public void grantGamePoints(Integer points)
 	{
 		this.gamePointHistory.add(this.gamePoints);

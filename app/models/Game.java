@@ -52,9 +52,15 @@ public class Game extends Model {
 		return false;
 	}
 	
-	public JsonNode toJson()
+	public JsonNode toJson(User user)
 	{
-		this.userId = Integer.parseInt(Controller.session("userid"));
+		if(user == null)
+			return null;
+
+		this.userId = user.id;
+		if(this.gameState != null)
+			this.gameState = this.gameState.sanitizeForUser(user);
+		this.gameStateString = "";
 		return Json.toJson(this);
 	}
 	
