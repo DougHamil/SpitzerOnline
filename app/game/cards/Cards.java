@@ -13,6 +13,13 @@ import com.google.common.collect.Sets;
 
 public class Cards extends ArrayList<Card> 
 {
+	public Cards(){super();}
+
+	public Cards(Cards other)
+	{
+		super(other);
+	}
+
 	public boolean hasBothQueens()
 	{
 		return this.contains(Card.QUEEN_OF_CLUBS) && this.contains(Card.QUEEN_OF_SPADES);

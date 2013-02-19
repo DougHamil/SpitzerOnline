@@ -49,7 +49,7 @@ function buildTrickCardElements(trick)
 		$(c).droppable({
 			greedy:true,
 			accept:'#hand .card',
-			tolerance:'touch',
+			tolerance:'pointer',
 			drop:function(event, ui){
 				
 				var draggedImg = ui.draggable.children('img').get(0);
@@ -72,6 +72,9 @@ function buildTrickCardElements(trick)
 				{
 					ui.draggable.draggable('option', 'revert', true);
 				}
+				
+				event.preventDefault();
+				event.stopPropogation();
 			}
 		})
 	});
@@ -104,18 +107,17 @@ function buildCardElements(changeSet)
 		newCard.droppable({
 			greedy:true,
 			accept:'#hand .card',
-			tolerance:'touch',
+			tolerance:'pointer',
 			drop:function(event, ui){
-				
 				// Swap images
 				var draggedImg = ui.draggable.children('img').get(0);
 				var droppedImg = $(event.target).children('img').get(0);
 				$(event.target).append(draggedImg);
 				ui.draggable.append(droppedImg);
-				
-
 				ui.draggable.draggable('option', 'revert', true);
 				$(event.target).draggable('option', 'revert', true);
+				event.preventDefault();
+				event.stopPropogation();
 			}
 		});
 	});
@@ -297,10 +299,10 @@ function updatePlayerList(players)
 	$('#players').html("");
 	gamePointChartEl.children('.playerPointChart').remove();
 	$.each(players, function(i, p){
-		var player = getPlayerByUserId(p.id);
+		var player = getPlayerByUserId(p.userId);
 		var playerDiv = $('<div class="player">');
-		playerDiv.attr('playerId', p.id);
-		if(p.id == getCurrentPlayerId())
+		playerDiv.attr('playerId', p.userId);
+		if(p.userId == getCurrentPlayerId())
 			playerDiv.addClass('active');
 		var scoreDiv = $('<div class="playerTrickScore">');
 		scoreDiv.text(player.trickPoints||0);
@@ -309,7 +311,7 @@ function updatePlayerList(players)
 		var gameScoreDiv = $('<div class="playerGameScore">');
 		gameScoreDiv.text(player.gamePoints||0);
 		var declareDiv = $('<div class="declaration">');
-		if(p.id == getPublicDeclarationUserId())
+		if(p.userId == getPublicDeclarationUserId())
 			declareDiv.text(getPublicDeclarationString());
 		playerDiv.append(nameDiv);
 		playerDiv.append(gameScoreDiv);
@@ -318,7 +320,7 @@ function updatePlayerList(players)
 		$('#players').append(playerDiv);
 		
 		var pointChartDiv = $('<div class="playerPointChart">');
-		pointChartDiv.attr('playerid', p.id);
+		pointChartDiv.attr('playerid', p.userId);
 		var pointChartName = $('<div class="playerName">');
 		pointChartName.text(p.name);
 		var pointChartLast = $('<div class="lastPoints">');

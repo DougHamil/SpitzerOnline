@@ -33,6 +33,16 @@ public class SpitzerPlayers extends ArrayList<SpitzerPlayer>
 		
 	};
 
+	// Copy constructor, copy the underlying players too
+	public SpitzerPlayers(SpitzerPlayers other)
+	{
+		super();
+		for(SpitzerPlayer player : other)
+		{
+			this.add(new SpitzerPlayer(player));
+		}
+	}
+
 	public SpitzerPlayers(Collection<SpitzerPlayer> other)
 	{
 		super(other);

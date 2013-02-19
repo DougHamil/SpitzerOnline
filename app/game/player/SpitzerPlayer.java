@@ -19,7 +19,27 @@ public class SpitzerPlayer
 	public List<SpitzerDeclaration> declarations;
 	public List<Integer> gamePointHistory = Lists.newArrayList();
 	public SpitzerDeclaration activeDeclaration;
-	
+
+	public SpitzerPlayer(){}
+
+	// Copy constructor
+	public SpitzerPlayer(SpitzerPlayer player) 
+	{
+		this.name = player.name;
+		this.trickPoints = player.trickPoints;
+		this.gamePoints = player.gamePoints;
+		this.isDealer = player.isDealer;
+		this.userId = player.userId;
+		if(player.hand != null)
+			this.hand = new Cards(player.hand);
+		if(player.declarations != null)
+			this.declarations = Lists.newArrayList(player.declarations);
+		if(player.gamePointHistory != null)
+			this.gamePointHistory = Lists.newArrayList(player.gamePointHistory);
+		this.activeDeclaration = player.activeDeclaration;
+	}
+
+
 	// This method is called when this player is not the active player
 	// Remove all information that could be used to cheat
 	public void sanitize()

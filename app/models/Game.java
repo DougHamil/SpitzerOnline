@@ -56,12 +56,12 @@ public class Game extends Model {
 	{
 		if(user == null)
 			return null;
-
 		this.userId = user.id;
-		if(this.gameState != null)
-			this.gameState = this.gameState.sanitizeForUser(user);
-		this.gameStateString = "";
-		return Json.toJson(this);
+
+		JsonNode node = null;
+		if(this.getGameState() != null)
+			node = Json.toJson(this.getGameState().sanitizeForUser(user));
+		return node;
 	}
 	
 	public boolean onPlayerJoin(User player)

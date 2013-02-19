@@ -30,7 +30,6 @@ import util.GameError;
 public class SpitzerGameState
 {
 	public SpitzerPlayers players;
-
 	public Integer maxPlayers;
 	public Integer currentDealer;
 	public Integer currentPlayer;
@@ -51,17 +50,70 @@ public class SpitzerGameState
 	public Integer zolaPlayer;
 	public SpitzerDeclaration publicDeclaration;
 	public Integer declarePlayer;
+	public Integer userId;
+	
+	public static SpitzerGameState copy(SpitzerGameState state)
+	{
+		SpitzerGameState copied = new SpitzerGameState();
+
+		// This performs a deep copy of the spitzer player objects
+		copied.players = new SpitzerPlayers(state.players);
+		copied.maxPlayers = state.maxPlayers;
+		copied.currentDealer = state.currentDealer;
+		copied.currentPlayer = state.currentPlayer;
+		if(state.gameWinners != null)
+			copied.gameWinners = Sets.newHashSet(state.gameWinners);
+		if(state.blackTeam != null)
+			copied.blackTeam = Sets.newHashSet(state.blackTeam);
+		if(state.otherTeam != null)
+			copied.otherTeam = Sets.newHashSet(state.otherTeam);
+		if(state.trickPointsPerCard != null)
+			copied.trickPointsPerCard = Maps.newHashMap(state.trickPointsPerCard);
+		copied.stage = state.stage;
+		copied.trickNumber = state.trickNumber;
+		if(state.trickCards != null)
+			copied.trickCards = Maps.newHashMap(state.trickCards);
+		if(state.trickCardsOrdered != null)
+			copied.trickCardsOrdered = Lists.newArrayList(state.trickCardsOrdered);
+		if(state.trickCardsHistory != null)
+			copied.trickCardsHistory = Lists.newArrayList(state.trickCardsHistory);
+		if(state.trickWinningCardHistory != null)
+			copied.trickWinningCardHistory = Lists.newArrayList(state.trickWinningCardHistory);
+		if(state.trickPointHistory != null)
+			copied.trickPointHistory = Lists.newArrayList(state.trickPointHistory);
+		if(state.trickWinnerHistory != null)
+			copied.trickWinnerHistory = Lists.newArrayList(state.trickWinnerHistory);
+		if(state.playerCheckins != null)
+			copied.playerCheckins = Sets.newHashSet(state.playerCheckins);
+		copied.zolaDeclaration = state.zolaDeclaration;
+		copied.zolaPlayer = state.zolaPlayer;
+		copied.publicDeclaration = state.publicDeclaration;
+		copied.declarePlayer = state.declarePlayer;
+		copied.userId = state.userId;
+
+		return copied;
+	}
 	
 	public SpitzerGameState sanitizeForUser(User user)
 	{
+		// Make a copy of this state
+		SpitzerGameState copy = SpitzerGameState.copy(this);
+
+		// Remove teams
+		copy.blackTeam = null;
+		copy.otherTeam = null;
+
 		// Clear out all other players' hands
-		for(SpitzerPlayer player : players)
+		for(SpitzerPlayer player : copy.players)
 		{
 			if(!player.userId.equals(user.id))
 				player.sanitize();
 		}
 
-		return this;
+		// This game state belongs to this user
+		copy.userId = user.id;
+
+		return copy;
 	}
 	
 	private void moveToStage(GameStage newStage)

@@ -16,7 +16,7 @@ function getPlayerGamePointHistory(userId)
 
 function isPlayerWinner()
 {
-	return game.gameState.gameWinners.indexOf(game.userId) != -1;
+	return game.gameWinners.indexOf(game.userId) != -1;
 }
 
 function setPlayerTooltip(msg, playerId)
@@ -40,17 +40,17 @@ function setPlayerTooltip(msg, playerId)
 
 function getLastTrickWinnerId()
 {
-	return game.gameState.trickWinnerHistory[game.gameState.trickWinnerHistory.length - 1];
+	return game.trickWinnerHistory[game.trickWinnerHistory.length - 1];
 }
 
 function getLastTrickPoints()
 {
-	return game.gameState.trickPointHistory[game.gameState.trickPointHistory.length - 1];
+	return game.trickPointHistory[game.trickPointHistory.length - 1];
 }
 
 function getNumPlayers()
 {
-	return game.gameState.players.length;
+	return game.players.length;
 }
 
 function getPlayer()
@@ -60,22 +60,22 @@ function getPlayer()
 
 function getStage()
 {
-	return Stages[game.gameState.stage];
+	return Stages[game.stage];
 }
 
 function getPublicDeclarationUserId()
 {
-	return game.gameState.declarePlayer;
+	return game.declarePlayer;
 }
 
 function getCurrentDealerId()
 {
-	return game.gameState.currentDealer;
+	return game.currentDealer;
 }
 
 function getCurrentPlayerId()
 {
-	return game.gameState.currentPlayer;
+	return game.currentPlayer;
 }
 
 function getPlayerDiv(playerId)
@@ -90,12 +90,12 @@ function getPublicDeclarationString()
 
 function getPublicDeclaration()
 {
-	return game.gameState.publicDeclaration;
+	return game.publicDeclaration;
 }
 
 function getDealerName()
 {
-	var dealerId = game.gameState.currentDealer;
+	var dealerId = game.currentDealer;
 	return getPlayerByUserId(dealerId).name;
 }
 
@@ -136,29 +136,29 @@ function getTrickCards()
 
 function getTrickCardsAsMap()
 {
-	return game.gameState.trickCards;
+	return game.trickCards;
 }
 
 function getTrickTurnPlayer()
 {
-	return getPlayerByUserId(game.gameState.currentPlayer);
+	return getPlayerByUserId(game.currentPlayer);
 }
 
 function isPlayersTurn()
 {
-	return getStage() == 'TRICK' && game.userId == game.gameState.currentPlayer;
+	return getStage() == 'TRICK' && game.userId == game.currentPlayer;
 }
 
 function getTrickCardsHistory()
 {
-	return game.gameState.trickCardsHistory || [];
+	return game.trickCardsHistory || [];
 }
 
 function getPlayerByUserId(userId)
 {
-	for(var player in game.gameState.players)
+	for(var player in game.players)
 	{
-		player = game.gameState.players[player];
+		player = game.players[player];
 		if(player.userId == userId)
 			return player;
 	}
@@ -193,7 +193,7 @@ function checkedIn()
 {
 	var player = getPlayer();
 	
-	return game.gameState.playerCheckins.indexOf(player.userId) != -1;
+	return game.playerCheckins.indexOf(player.userId) != -1;
 }
 
 function getUserByUserId(userId)
@@ -215,7 +215,7 @@ function hasDeclarations()
 
 function isDealer()
 {
-	return game.userId == game.gameState.currentDealer;
+	return game.userId == game.currentDealer;
 }
 
 function isHost()
