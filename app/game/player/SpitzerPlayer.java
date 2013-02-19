@@ -11,14 +11,20 @@ import com.google.common.collect.Lists;
 public class SpitzerPlayer
 {
 	public String name;
-	public Integer trickPoints;
-	public Integer gamePoints;
+	public Integer trickPoints = 0;
+	public Integer gamePoints = 0;
 	public boolean isDealer;
 	public Integer userId;
 	public Cards hand;
-	public Cards capturedCards;
 	public List<SpitzerDeclaration> declarations;
+	public List<Integer> gamePointHistory = Lists.newArrayList();
 	public SpitzerDeclaration activeDeclaration;
+	
+	public void grantGamePoints(Integer points)
+	{
+		this.gamePointHistory.add(this.gamePoints);
+		this.gamePoints += points;
+	}
 	
 	public void addCardToHand(Card card)
 	{
@@ -28,13 +34,6 @@ public class SpitzerPlayer
 		hand.add(card);
 	}
 	
-	public void addCardToCaptured(Card card)
-	{
-		if(capturedCards == null)
-			capturedCards = new Cards();
-		
-		capturedCards.add(card);
-	}
 	
 	@Override
 	public boolean equals(Object other)

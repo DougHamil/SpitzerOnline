@@ -2,6 +2,10 @@ var lastCardHand = null;
 var lastTrickCards = null;
 var lastNumPlayers = 0;
 var lastTrickHistorySize = 0;
+var gamePointChartEl;
+var playerTooltipEl;
+var statusMessageEl;
+var declarationMenuEl;
 
 function initializeUI()
 {
@@ -14,6 +18,14 @@ function initializeUI()
 	});
 	$("#checkInButton").hide();
 	$("#declarationMenu").hide();
+	gamePointChartEl = $("#gamePointChart");
+	gamePointChartEl.hide();
+	playerTooltipEl = $("#playerTooltip");
+	statusMessageEl = $("#statusMessage");
+	declarationMenuEl = $("#declarationMenu");
+	updatePlayerList(game.players);
+	
+	$("#playerTooltip").width($(getPlayerDiv(getPlayer().userId)).width());
 }
 
 function buildTrickCardElements(trick)
@@ -121,7 +133,6 @@ function updateUI()
 	
 	$("#checkInButton").hide();
 	
-	
 	// Show deal button if dealer
 	if(getStage() == "DEAL" && isDealer())
 		$("#dealButton").show();
@@ -131,9 +142,12 @@ function updateUI()
 	if(getStage() == "DECLARATION" && hasDeclarations())
 		showDeclarationMenu();
 	else
-		$("#declarationMenu").hide();
+		declarationMenuEl.hide();
 	
 	if(getStage() == "POST_TRICK" && !checkedIn())
+		$("#checkInButton").show();
+	
+	if(getStage() == "POST_ROUND" && !checkedIn())
 		$("#checkInButton").show();
 		
 	
@@ -144,26 +158,24 @@ function updateUI()
 function showDeclarationMenu()
 {
 	// If it's already shown, don't worry about it
-	if($("#declarationMenu").is(":visible"))
+	if(declarationMenuEl.is(":visible"))
 		return;
 	
 	var player = getPlayer();
 	var declarations = player.declarations;
 	
-	$("#declarationMenu").show();
-	$("#declarationMenu").html("");
+	declarationMenuEl.show();
+	declarationMenuEl.html("");
 	var form = $('<form id="declarationForm">');
 	$.each(declarations, function(i, d){
-		console.log(d);
 		form.append($('<input type="radio" value="'+d+'" name="declaration">'+d+'</input>'));
 		form.append($('<br/>'));
-		
 	});
 	
 	form.append($('<input type="button" value="Declare">').click(function(){
 		requestDeclaration(onGetGameState, onFailed);
 	}));
-	$("#declarationMenu").append(form);
+	declarationMenuEl.append(form);
 }
 
 function updateTrick()
@@ -193,6 +205,8 @@ function updateHand()
 
 function updateStatusMessage()
 {
+	playerTooltipEl.hide();
+	gamePointChartEl.hide();
 	setStatusMessage("UNKNOWN STATUS");
 	
 	if(getStage() == "WAITING_FOR_PLAYERS")
@@ -201,6 +215,7 @@ function updateStatusMessage()
 	}
 	else if(getStage() == "DEAL")
 	{
+		setPlayerTooltip('Dealing');
 		if(isDealer())
 			setStatusMessage("It is your turn to deal.");
 		else
@@ -216,30 +231,74 @@ function updateStatusMessage()
 	}
 	else if(getStage() == "TRICK" && isPlayersTurn())
 	{
+		setPlayerTooltip('Playing');		
 		setStatusMessage("Please play a card");
 	}
 	else if(getStage() == "TRICK" && !isPlayersTurn())
 	{
+		setPlayerTooltip('Playing');				
 		setStatusMessage("Waiting for "+getTrickTurnPlayer().name+" to play a card.")
 	}
-	else if(getStage() == "POST_TRICK" && !checkedIn())
+	else if(getStage() == "POST_TRICK")
 	{
-		setStatusMessage("Please press continue when you're ready for the next trick.");
+		setPlayerTooltip("Won the trick for "+getLastTrickPoints()+" points", getLastTrickWinnerId());
+		
+		if(!checkedIn())
+			setStatusMessage("Please press continue when you're ready for the next trick.");
+		else
+			setStatusMessage("Waiting for other players to continue...");
+			
 	}
-	else if(getStage() == "POST_TRICK" && checkedIn())
+	else if(getStage() == "POST_ROUND")
 	{
-		setStatusMessage("Waiting for other players to continue...");
+		showGamePointChart();
+		
+		if(!checkedIn())
+			setStatusMessage("Please press continue when you're ready for the next game.");
+		else
+			setStatusMessage("Waiting for other players to continue...");
 	}
+	else if(getStage() == "POST_GAME")
+	{
+		showGamePointChart();
+		
+		if(isPlayerWinner())
+		{
+			setStatusMessage("You won the game!");
+		}
+		else
+		{
+			setStatusMessage("You lost the game");
+		}
+	}
+}
+
+function showGamePointChart()
+{
+	gamePointChartEl.children('.playerPointChart').each(function(i, c){
+		var playerId = $(c).attr('playerid');
+		var pointHistory = getPlayerGamePointHistory(playerId);
+		
+		$(c).find('.lastPoints').text(pointHistory.last);
+		$(c).find('.diffPoints').text("+"+(pointHistory.total - pointHistory.last));
+	});
+	
+	var trickEl = $("#trick");
+	gamePointChartEl.show();
+	gamePointChartEl.offset(trickEl.offset());
+	gamePointChartEl.width(trickEl.width());
+	gamePointChartEl.height(trickEl.height());
 }
 
 function updatePlayerList(players)
 {
 	$('#players').html("");
+	gamePointChartEl.children('.playerPointChart').remove();
 	$.each(players, function(i, p){
 		var player = getPlayerByUserId(p.id);
 		var playerDiv = $('<div class="player">');
 		playerDiv.attr('playerId', p.id);
-		if(p.id == getCurrentTrickPlayerId())
+		if(p.id == getCurrentPlayerId())
 			playerDiv.addClass('active');
 		var scoreDiv = $('<div class="playerTrickScore">');
 		scoreDiv.text(player.trickPoints||0);
@@ -255,7 +314,21 @@ function updatePlayerList(players)
 		playerDiv.append(scoreDiv);
 		playerDiv.append(declareDiv);
 		$('#players').append(playerDiv);
+		
+		var pointChartDiv = $('<div class="playerPointChart">');
+		pointChartDiv.attr('playerid', p.id);
+		var pointChartName = $('<div class="playerName">');
+		pointChartName.text(p.name);
+		var pointChartLast = $('<div class="lastPoints">');
+		var pointChartDiff = $('<div class="diffPoints">');
+		
+		pointChartDiv.append(pointChartName);
+		pointChartDiv.append(pointChartLast);
+		pointChartDiv.append(pointChartDiff);
+		
+		gamePointChartEl.append(pointChartDiv);
 	});
+	
 }
 
 function showOverlay(overlay)

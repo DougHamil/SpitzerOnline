@@ -4,6 +4,38 @@
 	margin-right:auto;
 }
 
+#gamePointChart {
+	position:absolute;
+	background-color:#AAA;
+	border-radius:5px;
+}
+
+#gamePointChart > h3 {
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+#gamePointChart .diffPoints {
+	font-weight:bold;
+	font-size:150%;
+}
+
+#gamePointChart .playerPointChart  > * {
+	display:inline-block;
+	padding:5px;
+	margin:5px;
+}
+
+#playerTooltip {
+	position:absolute;
+	border-radius:5px;
+	height:20px;
+	overflow:hidden;
+	text-align:center;
+	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+}
+
 #players {
 	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	border-radius:5px;

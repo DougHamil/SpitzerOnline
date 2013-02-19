@@ -1,9 +1,52 @@
 
 function setStatusMessage(msg)
 {
-	$("#statusMessage").html(msg);
+	statusMessageEl.html(msg);
 }
 
+function getPlayerGamePointHistory(userId)
+{
+	var player = getPlayerByUserId(userId);
+	
+	var lastPoints = player.gamePointHistory.length > 0 ? player.gamePointHistory[player.gamePointHistory.length - 1] : 0;
+	var totalPoints = player.gamePoints;
+	
+	return {last:lastPoints, total:totalPoints};
+}
+
+function isPlayerWinner()
+{
+	return game.gameState.gameWinners.indexOf(game.userId) != -1;
+}
+
+function setPlayerTooltip(msg, playerId)
+{
+	var playerId = playerId || getCurrentPlayerId();
+	
+	if(playerId == undefined || playerId == null)
+		return;
+	
+	playerTooltipEl.html(msg);
+	
+	// Position the tooltip
+	var playerDiv = getPlayerDiv(playerId);
+	
+	var pos = playerDiv.offset();
+	pos.top += playerDiv.height();
+	
+	playerTooltipEl.show();
+	playerTooltipEl.offset(pos);
+}
+
+function getLastTrickWinnerId()
+{
+	return game.gameState.trickWinnerHistory[game.gameState.trickWinnerHistory.length - 1];
+}
+
+function getLastTrickPoints()
+{
+	return game.gameState.trickPointHistory[game.gameState.trickPointHistory.length - 1];
+}
 
 function getNumPlayers()
 {
@@ -25,7 +68,12 @@ function getPublicDeclarationUserId()
 	return game.gameState.declarePlayer;
 }
 
-function getCurrentTrickPlayerId()
+function getCurrentDealerId()
+{
+	return game.gameState.currentDealer;
+}
+
+function getCurrentPlayerId()
 {
 	return game.gameState.currentPlayer;
 }
@@ -182,5 +230,7 @@ var Stages =
 	"DECLARATION" :"DECLARATION",
 	"TRICK":"TRICK",
 	"WAITING_FOR_PLAYERS":"WAITING_FOR_PLAYERS",
-	"POST_TRICK":"POST_TRICK"
+	"POST_TRICK":"POST_TRICK",
+	"POST_ROUND":"POST_ROUND",
+	"POST_GAME":"POST_GAME"
 }
