@@ -125,13 +125,7 @@ function getHandChangeSet(current, target)
 
 function getTrickCards()
 {
-	var trickCardMap = getTrickCardsAsMap();
-	var trickCards = [];
-	for(var card in trickCardMap)
-	{
-		trickCards.push(card);
-	}
-	return trickCards;
+	return game.trickCardsOrdered;
 }
 
 function getTrickCardsAsMap()

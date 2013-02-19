@@ -6,6 +6,8 @@ var gamePointChartEl;
 var playerTooltipEl;
 var statusMessageEl;
 var declarationMenuEl;
+var checkInTimer = null;
+var CHECKIN_TIMEOUT = 5000;
 
 function initializeUI()
 {
@@ -14,6 +16,11 @@ function initializeUI()
 		requestDeal(onGetGameState, onDealFailed);
 	});
 	$("#checkInButton").click(function(){
+		if(checkInTimer != null)
+		{
+			clearTimeout(checkInTimer);
+			checkInTimer = null;
+		}
 		requestCheckIn(onGetGameState, onFailed);
 	});
 	$("#checkInButton").hide();
@@ -73,8 +80,6 @@ function buildTrickCardElements(trick)
 					ui.draggable.draggable('option', 'revert', true);
 				}
 				
-				event.preventDefault();
-				event.stopPropogation();
 			}
 		})
 	});
@@ -116,8 +121,6 @@ function buildCardElements(changeSet)
 				ui.draggable.append(droppedImg);
 				ui.draggable.draggable('option', 'revert', true);
 				$(event.target).draggable('option', 'revert', true);
-				event.preventDefault();
-				event.stopPropogation();
 			}
 		});
 	});
@@ -147,13 +150,6 @@ function updateUI()
 		showDeclarationMenu();
 	else
 		declarationMenuEl.hide();
-	
-	if(getStage() == "POST_TRICK" && !checkedIn())
-		$("#checkInButton").show();
-	
-	if(getStage() == "POST_ROUND" && !checkedIn())
-		$("#checkInButton").show();
-		
 	
 	updateHand();
 	updateTrick();
@@ -248,7 +244,10 @@ function updateStatusMessage()
 		setPlayerTooltip("Won the trick for "+getLastTrickPoints()+" points", getLastTrickWinnerId());
 		
 		if(!checkedIn())
+		{
+			requireCheckIn();
 			setStatusMessage("Please press continue when you're ready for the next trick.");
+		}
 		else
 			setStatusMessage("Waiting for other players to continue...");
 			
@@ -258,7 +257,10 @@ function updateStatusMessage()
 		showGamePointChart();
 		
 		if(!checkedIn())
+		{
+			requireCheckIn();
 			setStatusMessage("Please press continue when you're ready for the next game.");
+		}
 		else
 			setStatusMessage("Waiting for other players to continue...");
 	}
@@ -333,6 +335,19 @@ function updatePlayerList(players)
 		gamePointChartEl.append(pointChartDiv);
 	});
 	
+}
+
+function requireCheckIn()
+{
+	if(checkInTimer == null)
+	{
+		$("#checkInButton").show();
+		checkInTimer = setTimeout(function(){
+			requestCheckIn(onGetGameState, onFailed);
+			checkInTimer = null;		
+		},
+		CHECKIN_TIMEOUT);
+	}
 }
 
 function showOverlay(overlay)

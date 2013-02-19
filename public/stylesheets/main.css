@@ -7,6 +7,7 @@
 #dealButton, #checkInButton, #declareButton {
 	background-image: linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	padding:5px;
 	border-radius:5px;
 	text-decoration:none !important;
@@ -46,10 +47,12 @@
 	overflow:hidden;
 	text-align:center;
 	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 }
 
 #players {
 	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	border-radius:5px;
 	clear:both;
 	height:100px;
@@ -58,6 +61,7 @@
 .player.active {
 	background-image: linear-gradient(bottom, rgb(57,200,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	background-image: -webkit-linear-gradient(bottom, rgb(57,200,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(57,200,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 }
 
 .player {
@@ -65,7 +69,7 @@
 	margin:0;
 	padding:0;
 	display:inline-block;
-	width:25%;
+	width:24%;
 	height:100%;
 	border-radius:5px;
 	border-width:2px;
