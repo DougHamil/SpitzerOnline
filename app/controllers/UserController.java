@@ -52,6 +52,12 @@ public class UserController extends Controller {
 		String username = DynamicForm.form().bindFromRequest().get("username");
 		return doLogin(username);
 	}
+
+	public static Result logout()
+	{
+		session().clear();
+		return redirect(controllers.routes.HomeController.index());
+	}
 	
 	private static User createNewUser(String username)
 	{

@@ -51,6 +51,9 @@ POST	/spizter/users/create					controllers.UserController.create()
 #User wants to login
 POST	/spitzer/users/login					controllers.UserController.login()
 
+#User wants to logout
+GET	/spitzer/users/logout					controllers.UserController.logout()
+
 #Check user login
 GET		/spitzer/users/check					controllers.UserController.check()
 

@@ -9,6 +9,11 @@ function requestCheckIn(suc, fail)
 	});
 }
 
+function requestLogout()
+{
+	window.location = routes.requestLogout;
+}
+
 function requestPlayCard(card, suc, fail)
 {
 	var data = {card:card};

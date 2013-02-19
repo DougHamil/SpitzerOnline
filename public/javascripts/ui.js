@@ -23,9 +23,11 @@ function initializeUI()
 	playerTooltipEl = $("#playerTooltip");
 	statusMessageEl = $("#statusMessage");
 	declarationMenuEl = $("#declarationMenu");
+
+	// Build the player list, we need to do this before the tooltip's width is set
 	updatePlayerList(game.players);
 	
-	$("#playerTooltip").width($(getPlayerDiv(getPlayer().userId)).width());
+	playerTooltipEl.width($(getPlayerDiv(getPlayer().userId)).width());
 }
 
 function buildTrickCardElements(trick)
