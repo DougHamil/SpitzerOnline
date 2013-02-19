@@ -4,6 +4,8 @@ import game.SpitzerGameState;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import models.Game;
 import models.Game.GameMode;
 import models.User;
@@ -81,8 +83,25 @@ public class GameController extends Controller {
     	return Game.find.byId(id);
     }
     
+    public static List<Game> getActiveGames(User user)
+    {
+    	List<Game> allGames = Game.find.all();
+    	
+    	List<Game> activeGames = Lists.newArrayList();
+    	
+    	// Find all games that the player is in
+    	for(Game game : allGames)
+    	{
+    		if(game.containsPlayer(user))
+    			activeGames.add(game);
+    	}
+    	
+    	return activeGames;
+    }
+    
     public static List<Game> getOpenGames()
     {
+    	// Get all open games
     	return Game.find.where().eq("state", GameMode.OPEN.getId()).findList();
     }
 }

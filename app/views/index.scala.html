@@ -1,24 +1,26 @@
-@(games : List[Game])
+@(games : List[Game], activeGames : List[Game])
 
 @main{
-	<h1>Game Lobby</h1>
+	<h1>Spitzer Online</h1>
 	<form method="post" action="@routes.GameController.host()">
-		<input type="submit" value="Host Game">
+		<input  id="hostGameButton" type="submit" value="Host New Game">
 	</form>
-	<table>
-		<thead>
-			<tr>
-				<td>Name</td>
-				<td>Players</td>
-			</tr>
-		</thead>
-		<tbody>
+	<div id="openGames">
+		<h3>Open Games</h3>
 			@for(game <- games) {
-				<tr>
-					<td><a href="@routes.GameController.join(game.id)">@game.name</a></td>
-					<td>@game.getNumberOfPlayers()</td>
-				</tr>
+				<div class="game">
+					<a class="gameLink" href="@routes.GameController.join(game.id)">@game.name</a>
+					<div class="playerCount">@game.getNumberOfPlayers() / 4</div>
+				</div>
 			}
-		</tbody>
-	</table>
+	</div>
+	<div id="activeGames">
+		<h3>Joined Games</h3>
+		@for(game <- activeGames) {
+			<div class="game">
+				<a class="gameLink" href="@routes.GameController.view(game.id)">@game.name</a>
+				<div class="playerCount">@game.getNumberOfPlayers() / 4</div>
+			</div>
+		}
+	</div>
 }

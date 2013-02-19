@@ -4,6 +4,18 @@
 	margin-right:auto;
 }
 
+#dealButton, #checkInButton, #declareButton {
+	background-image: linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+	background-image: -webkit-linear-gradient(bottom, rgb(237,171,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
+	padding:5px;
+	border-radius:5px;
+	text-decoration:none !important;
+	color:#000;
+	cursor:pointer;
+	border-width:0;
+	font-weight:bold !important;
+}
+
 #gamePointChart {
 	position:absolute;
 	background-color:#AAA;
@@ -44,7 +56,7 @@
 }
 
 .player.active {
-	background-image: linear-gradient(bottom, rgb(237,250,57) 25%,  rgb(237,171,57) 63%, rgb(255,207,125) 75%);
+	background-image: linear-gradient(bottom, rgb(57,200,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 	background-image: -webkit-linear-gradient(bottom, rgb(57,200,57) 0%,   rgb(255,207,125) 50%, rgb(237,171,57) 100%);
 }
 
@@ -127,7 +139,7 @@
 body {
 	background-image:url('/assets/images/Felt-Green.jpg');
 	background-repeat:repeat;
-	font-family:'Ubuntu',sans-serif;
+	font-family: Century Gothic, sans-serif;
 	color:#FFF;
 }
 

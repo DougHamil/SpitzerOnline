@@ -172,7 +172,7 @@ function showDeclarationMenu()
 		form.append($('<br/>'));
 	});
 	
-	form.append($('<input type="button" value="Declare">').click(function(){
+	form.append($('<input id="declareButton" type="button" value="Declare">').click(function(){
 		requestDeclaration(onGetGameState, onFailed);
 	}));
 	declarationMenuEl.append(form);
