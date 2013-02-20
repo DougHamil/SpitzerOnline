@@ -14,6 +14,7 @@ var ui = {
 		checkInTimer:null,
 		
 		init:function(){
+			
 			this.dealButtonEl = $("#dealButton");
 			this.statusMessageEl = $("#statusMessage");
 			this.declarationMenuEl = $("#declarationMenu");
@@ -22,6 +23,8 @@ var ui = {
 			this.gamePointChartEl = $("#gamePointChart");
 			this.playersEl = $("#players");
 			this.handEl = $("#hand");
+
+			this.buildCardTable();
 			
 			// UI events
 			this.dealButtonEl.hide();
@@ -193,6 +196,7 @@ var ui = {
 				break;
 			case "POST_ROUND":
 				this.gamePointChartEl.hide();
+				this.updatePlayerScores();
 				break;
 			}
 		},
@@ -390,6 +394,9 @@ var ui = {
 				},
 				this.CHECKIN_TIMEOUT);
 			}
+		},
+		buildCardTable:function(){
+
 		}
 }
 
