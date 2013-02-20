@@ -16,7 +16,7 @@ import java.util.Set;
 @Table(name = "games")
 public class Game extends Model {
 	
-	public static final Integer NUM_PLAYERS = 4;
+	public static final Integer NUM_PLAYERS = 2;
 	
 	@Id
 	public Integer id;

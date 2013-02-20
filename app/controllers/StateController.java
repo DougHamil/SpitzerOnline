@@ -5,20 +5,12 @@ import game.SpitzerDeclaration;
 import game.SpitzerGameState;
 import game.cards.Card;
 
-import java.util.List;
-
 import org.codehaus.jackson.JsonNode;
 
 import models.Game;
-import models.Game.GameMode;
 import models.User;
 
-import play.libs.Json;
 import play.mvc.*;
-
-import util.ErrorUtils;
-import util.GameError;
-import views.html.*;
 
 public class StateController extends Controller
 {

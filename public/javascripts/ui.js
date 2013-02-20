@@ -1,357 +1,398 @@
-var lastCardHand = null;
-var lastTrickCards = null;
-var lastNumPlayers = 0;
-var lastTrickHistorySize = 0;
-var gamePointChartEl;
-var playerTooltipEl;
-var statusMessageEl;
-var declarationMenuEl;
-var checkInTimer = null;
-var CHECKIN_TIMEOUT = 5000;
-
-function initializeUI()
-{
-	$("#dealButton").hide();
-	$("#dealButton").click(function(){
-		requestDeal(onGetGameState, onDealFailed);
-	});
-	$("#checkInButton").click(function(){
-		if(checkInTimer != null)
-		{
-			clearTimeout(checkInTimer);
-			checkInTimer = null;
-		}
-		requestCheckIn(onGetGameState, onFailed);
-	});
-	$("#checkInButton").hide();
-	$("#declarationMenu").hide();
-	gamePointChartEl = $("#gamePointChart");
-	gamePointChartEl.hide();
-	playerTooltipEl = $("#playerTooltip");
-	statusMessageEl = $("#statusMessage");
-	declarationMenuEl = $("#declarationMenu");
-
-	// Build the player list, we need to do this before the tooltip's width is set
-	updatePlayerList(game.players);
-	
-	playerTooltipEl.width($(getPlayerDiv(getPlayer().userId)).width());
-}
-
-function buildTrickCardElements(trick)
-{
-	$("#trick .card").remove();
-	
-	for(var i = 0; i < getNumPlayers(); i++)
-	{
-		$("#trick").append('<div class="card">');
-	}
-	
-	$("#trick .card").each(function(i, c){
+var ui = {
+		// Constants
+		CHECKIN_TIMEOUT:5000,
+		// DOM Elements
+		statusMessageEl:$("#statusMessage"),
+		declarationMenuEl:$("#declarationMenu"),
+		playerTooltipEl:$("#playerTooltip"),
+		dealButtonEl:$("#dealButton"),
+		checkInButtonEl:$("#checkInButton"),
+		gamePointChartEl:$("#gamePointChart"),
+		playersEl:$("#players"),
+		handEl:$("#hand"),
+		// Variables
+		checkInTimer:null,
 		
-		$(c).html(getCardHtml(trick[i]));
-		
-		if(trick[i])
-			return;
-		
-		$(c).droppable({
-			greedy:true,
-			accept:'#hand .card',
-			tolerance:'pointer',
-			drop:function(event, ui){
-				
-				var draggedImg = ui.draggable.children('img').get(0);
-				var droppedImg = $(event.target).children('img').get(0);
-				var ourCard = $(droppedImg).attr('card');
-				var card = $(draggedImg).attr('card');
-				
-				if(!ourCard && card && isPlayersTurn())
+		init:function(){
+			this.dealButtonEl = $("#dealButton");
+			this.statusMessageEl = $("#statusMessage");
+			this.declarationMenuEl = $("#declarationMenu");
+			this.playerTooltipEl = $("#playerTooltip");
+			this.checkInButtonEl = $("#checkInButton");
+			this.gamePointChartEl = $("#gamePointChart");
+			this.playersEl = $("#players");
+			this.handEl = $("#hand");
+			
+			// UI events
+			this.dealButtonEl.hide();
+			this.dealButtonEl.click(function(){
+				requestDeal(onGetGameState, onFailed);
+				$(this).hide();
+			});
+			
+			this.checkInButtonEl.hide();
+			this.checkInButtonEl.click(function(){
+				if(ui.checkInTimer != null)
 				{
-					requestPlayCard(card, function(data){
-						$(draggedImg).parent().hide();
-						onGetGameState(data);
-						
-					}, function(data){
-						ui.draggable.animate({top:0, left:0});
-						onFailed(data);
-					});
+					clearTimeout(ui.checkInTimer);
+					ui.checkInTimer = null;
+				}
+				requestCheckIn(onGetGameState, onFailed);
+				$(this).hide();
+			});
+			
+			this.declarationMenuEl.hide();
+			this.gamePointChartEl.hide();
+			
+			$(eventManager).on('stageChange', $.proxy(this.onStageChange, this));
+			$(eventManager).on('playerChange', $.proxy(this.onPlayerChange, this));
+			$(eventManager).on('trickChange', $.proxy(this.onTrickChange, this));
+			$(eventManager).on('handChange', $.proxy(this.onHandChange, this));
+			$(eventManager).on('currentPlayerChange', $.proxy(this.onCurrentPlayerChanged, this));
+			$(eventManager).on('playerCheckedIn', $.proxy(this.onPlayersCheckIn, this));
+		},
+		
+		// Called when the current player has changed
+		onCurrentPlayerChanged:function(event, oldPlayerId, newPlayerId, stage) {
+
+			// Add the active attribute to the active player
+			this.playersEl.children('.player').each(function(i,c){
+					var pEl = $(c);
+					
+					var id = pEl.attr('playerId');
+					if(id == newPlayerId)
+						pEl.addClass('active');
+					else
+						pEl.removeClass('active');
+			});
+			
+			// Move the tooltip
+			var playerDiv = getPlayerDiv(newPlayerId);
+			
+			var pos = playerDiv.offset();
+			pos.top += playerDiv.height();
+			
+			this.playerTooltipEl.show();
+			this.playerTooltipEl.offset(pos);
+			
+			// Depending on the current stage, we may need to change the UI
+			switch(stage)
+			{
+			case "DECLARATION":
+				if(isCurrentPlayer())
+				{
+					setStatusMessage("Please choose a declaration.");
+					this.declarationMenuEl.show();
 				}
 				else
 				{
-					ui.draggable.draggable('option', 'revert', true);
+					setStatusMessage("Waiting for "+getCurrentPlayerName()+" to declare...");
+					this.declarationMenuEl.hide();
 				}
+				break;
+			case "TRICK":
+				if(isCurrentPlayer())
+				{
+					setStatusMessage("Please play a card.");
+				}
+				else
+				{
+					setStatusMessage("Waiting for "+getCurrentPlayerName()+" to play a card.");
+				}
+				break;
+			}
+		
+		},
+		
+		// Called when the cards in the trick have changed
+		onTrickChange:function(event, oldTrick, newTrick) {
+			$("#trick .card").each(function(i, c){
+				$(c).html(getCardHtml(newTrick[i]));
+				
+				// Disable any trick cards that have been dropped
+				if(newTrick[i])
+					$(c).droppable({disabled:true});
+				else
+					$(c).droppable({disabled:false});
+			});
+		},
+		
+		onPlayersCheckIn:function(event, oldCheckins, newCheckins, stage)
+		{
+			switch(stage)
+			{
+			case "POST_ROUND":
+				if(checkedIn())
+					setStatusMessage("Waiting for other players to continue...");				
+				break;
+			case "POST_TRICK":
+				if(checkedIn())
+					setStatusMessage("Waiting for other players to continue...");
+				break;
+			}
+		},
+		
+		// Called when the game stage changes
+		onStageChange:function(event, oldStage, newStage) {
+			switch(newStage)
+			{
+			case "WAITING_FOR_PLAYERS":
+				this.setPlayerTooltip('Hosting');
+			break;
+			case "WAITING_FOR_DEAL":
+				this.setPlayerTooltip('Dealing');
+				if(isDealer())
+				{
+					this.dealButtonEl.show();
+					setStatusMessage("It's your turn to deal");
+				}
+				else
+				{
+					this.dealButtonEl.hide();
+					setStatusMessage("Waiting for "+getCurrentPlayerName()+" to deal...");
+				}
+				break;
+			case "DECLARATION":
+				this.setPlayerTooltip("Declaring");
+				this.buildDeclarationMenu();
+				break;
+			case "TRICK":
+				this.setPlayerTooltip("Playing");
+				if(isCurrentPlayer())
+					setStatusMessage("Please play a card.");
+				else
+					setStatusMessage("Waiting for "+getCurrentPlayerName()+" to play a card.");
+				break;
+			case "POST_TRICK":
+				this.updatePlayerScores();
+				this.setPlayerTooltip("Won the trick for "+getLastTrickPoints()+" points");
+				this.requireCheckIn();
+				setStatusMessage("Please press continue when you're ready for the next trick.");
+				break;
+			case "POST_ROUND":
+				this.updatePlayerScores();
+				this.showGamePointChart();
+				this.requireCheckIn();
+				setStatusMessage("Please press continue when you're ready for the next game.");
+				break;
+			case "POST_GAME":
+				this.updatePlayerScores();				
+				this.showGamePointChart();
+				if(isPlayerWinner())
+					setStatusMessage("You won the game!");
+				else
+					setStatusMessage("You lost the game");
+				break;
 				
 			}
-		})
-	});
-}
-
-function buildCardElements(changeSet)
-{
-	// Remove any cards that shouldn't be shown
-	$("#hand .card").each(function(i, c){
-		if(changeSet.remove.indexOf($(c).attr('card')) != -1)
-			$(c).remove();
-	});
-
-	// Add any new cards
-	$.each(changeSet.add, function(i, c){
-
-		var newCard = $('<div class="card">');
-		newCard.attr('card', c);
-		$("#hand").append(newCard);
-
-		newCard.draggable({
-			revert:true,
-			stop:function(event, ui){
-				$(this).draggable('option', 'revert', true);
-			}
-		});
-		
-		newCard.html(getCardHtml(c));
-		
-		newCard.droppable({
-			greedy:true,
-			accept:'#hand .card',
-			tolerance:'pointer',
-			drop:function(event, ui){
-				// Swap images
-				var draggedImg = ui.draggable.children('img').get(0);
-				var droppedImg = $(event.target).children('img').get(0);
-				$(event.target).append(draggedImg);
-				ui.draggable.append(droppedImg);
-				ui.draggable.draggable('option', 'revert', true);
-				$(event.target).draggable('option', 'revert', true);
-			}
-		});
-	});
-	
-	// Update the size of the hand box
-	var totalHeight = $("#hand h3").height() * 3;
-	totalHeight += $("#hand .card").height() * Math.ceil(($("#hand .card").length / 8));
-	
-	$("#hand").height(totalHeight);
-}
-
-function updateUI()
-{
-	updatePlayerList(game.players);
-		
-	updateStatusMessage();
-	
-	$("#checkInButton").hide();
-	
-	// Show deal button if dealer
-	if(getStage() == "DEAL" && isDealer())
-		$("#dealButton").show();
-	else
-		$("#dealButton").hide();
-	
-	if(getStage() == "DECLARATION" && hasDeclarations())
-		showDeclarationMenu();
-	else
-		declarationMenuEl.hide();
-	
-	updateHand();
-	updateTrick();
-}
-
-function showDeclarationMenu()
-{
-	// If it's already shown, don't worry about it
-	if(declarationMenuEl.is(":visible"))
-		return;
-	
-	var player = getPlayer();
-	var declarations = player.declarations;
-	
-	declarationMenuEl.show();
-	declarationMenuEl.html("");
-	var form = $('<form id="declarationForm">');
-	$.each(declarations, function(i, d){
-		form.append($('<input type="radio" value="'+d+'" name="declaration">'+d+'</input>'));
-		form.append($('<br/>'));
-	});
-	
-	form.append($('<input id="declareButton" type="button" value="Declare">').click(function(){
-		requestDeclaration(onGetGameState, onFailed);
-	}));
-	declarationMenuEl.append(form);
-}
-
-function updateTrick()
-{
-	var trick = getTrickCards();
-
-	if(lastNumPlayers == getNumPlayers() && lastTrickCards != null && handMatches(trick, lastTrickCards))
-		return;
-	
-	buildTrickCardElements(trick);
-	
-	lastTrickCards = trick;
-	lastNumPlayers = getNumPlayers();
-}
-
-function updateHand()
-{
-	var hand = getPlayer().hand;
-	
-	var changeSet = getHandChangeSet(lastCardHand, hand);
-	if(changeSet.add.length == 0 && changeSet.remove.length==0)
-		return;
-
-	buildCardElements(changeSet);
-	lastCardHand = hand;
-}
-
-function updateStatusMessage()
-{
-	playerTooltipEl.hide();
-	gamePointChartEl.hide();
-	setStatusMessage("UNKNOWN STATUS");
-	
-	if(getStage() == "WAITING_FOR_PLAYERS")
-	{
-		setStatusMessage("Waiting for players to join.");
-	}
-	else if(getStage() == "DEAL")
-	{
-		setPlayerTooltip('Dealing');
-		if(isDealer())
-			setStatusMessage("It is your turn to deal.");
-		else
-			setStatusMessage("Waiting for "+getDealerName()+" to deal.");
-	}
-	else if(getStage() == "DECLARATION" && hasDeclarations())
-	{
-		setStatusMessage("Choose a declaration");
-	}
-	else if(getStage() == "DECLARATION")
-	{
-		setStatusMessage("Waiting for other players to declare.");
-	}
-	else if(getStage() == "TRICK" && isPlayersTurn())
-	{
-		setPlayerTooltip('Playing');		
-		setStatusMessage("Please play a card");
-	}
-	else if(getStage() == "TRICK" && !isPlayersTurn())
-	{
-		setPlayerTooltip('Playing');				
-		setStatusMessage("Waiting for "+getTrickTurnPlayer().name+" to play a card.")
-	}
-	else if(getStage() == "POST_TRICK")
-	{
-		setPlayerTooltip("Won the trick for "+getLastTrickPoints()+" points", getLastTrickWinnerId());
-		
-		if(!checkedIn())
-		{
-			requireCheckIn();
-			setStatusMessage("Please press continue when you're ready for the next trick.");
-		}
-		else
-			setStatusMessage("Waiting for other players to continue...");
 			
-	}
-	else if(getStage() == "POST_ROUND")
-	{
-		showGamePointChart();
-		
-		if(!checkedIn())
-		{
-			requireCheckIn();
-			setStatusMessage("Please press continue when you're ready for the next game.");
-		}
-		else
-			setStatusMessage("Waiting for other players to continue...");
-	}
-	else if(getStage() == "POST_GAME")
-	{
-		showGamePointChart();
-		
-		if(isPlayerWinner())
-		{
-			setStatusMessage("You won the game!");
-		}
-		else
-		{
-			setStatusMessage("You lost the game");
-		}
-	}
-}
-
-function showGamePointChart()
-{
-	gamePointChartEl.children('.playerPointChart').each(function(i, c){
-		var playerId = $(c).attr('playerid');
-		var pointHistory = getPlayerGamePointHistory(playerId);
-		
-		$(c).find('.lastPoints').text(pointHistory.last);
-		$(c).find('.diffPoints').text("+"+(pointHistory.total - pointHistory.last));
-	});
-	
-	var trickEl = $("#trick");
-	gamePointChartEl.show();
-	gamePointChartEl.offset(trickEl.offset());
-	gamePointChartEl.width(trickEl.width());
-	gamePointChartEl.height(trickEl.height());
-}
-
-function updatePlayerList(players)
-{
-	$('#players').html("");
-	gamePointChartEl.children('.playerPointChart').remove();
-	$.each(players, function(i, p){
-		var player = getPlayerByUserId(p.userId);
-		var playerDiv = $('<div class="player">');
-		playerDiv.attr('playerId', p.userId);
-		if(p.userId == getCurrentPlayerId())
-			playerDiv.addClass('active');
-		var scoreDiv = $('<div class="playerTrickScore">');
-		scoreDiv.text(player.trickPoints||0);
-		var nameDiv = $('<div class="playerName">');
-		nameDiv.text(p.name);
-		var gameScoreDiv = $('<div class="playerGameScore">');
-		gameScoreDiv.text(player.gamePoints||0);
-		var declareDiv = $('<div class="declaration">');
-		if(p.userId == getPublicDeclarationUserId())
-			declareDiv.text(getPublicDeclarationString());
-		playerDiv.append(nameDiv);
-		playerDiv.append(gameScoreDiv);
-		playerDiv.append(scoreDiv);
-		playerDiv.append(declareDiv);
-		$('#players').append(playerDiv);
-		
-		var pointChartDiv = $('<div class="playerPointChart">');
-		pointChartDiv.attr('playerid', p.userId);
-		var pointChartName = $('<div class="playerName">');
-		pointChartName.text(p.name);
-		var pointChartLast = $('<div class="lastPoints">');
-		var pointChartDiff = $('<div class="diffPoints">');
-		
-		pointChartDiv.append(pointChartName);
-		pointChartDiv.append(pointChartLast);
-		pointChartDiv.append(pointChartDiff);
-		
-		gamePointChartEl.append(pointChartDiv);
-	});
-	
-}
-
-function requireCheckIn()
-{
-	if(checkInTimer == null)
-	{
-		$("#checkInButton").show();
-		checkInTimer = setTimeout(function(){
-			requestCheckIn(onGetGameState, onFailed);
-			checkInTimer = null;		
+			switch(oldStage)
+			{
+			case "DECLARATION":
+				this.updatePlayerDeclarations();
+				break;
+			case "POST_ROUND":
+				this.gamePointChartEl.hide();
+				break;
+			}
 		},
-		CHECKIN_TIMEOUT);
-	}
+		
+		// Called when the players in the game have changed
+		onPlayerChange:function(event, allPlayers){
+
+			this.playersEl.html("");
+			this.gamePointChartEl.children('.playerPointChart').remove();
+			
+			$.each(allPlayers, function(i, player){
+				var playerDiv = $('<div class="player">');
+				playerDiv.attr('playerId', player.userId);
+				if(player.userId == getCurrentPlayerId())
+					playerDiv.addClass('active');
+				var scoreDiv = $('<div class="playerTrickScore">');
+				scoreDiv.text(player.trickPoints||0);
+				var nameDiv = $('<div class="playerName">');
+				nameDiv.text(player.name);
+				var gameScoreDiv = $('<div class="playerGameScore">');
+				gameScoreDiv.text(player.gamePoints||0);
+				var declareDiv = $('<div class="declaration">');
+				if(player.userId == getPublicDeclarationUserId())
+					declareDiv.text(getPublicDeclarationString());
+				playerDiv.append(nameDiv);
+				playerDiv.append(gameScoreDiv);
+				playerDiv.append(scoreDiv);
+				playerDiv.append(declareDiv);
+				ui.playersEl.append(playerDiv);
+				
+				var pointChartDiv = $('<div class="playerPointChart">');
+				pointChartDiv.attr('playerid', player.userId);
+				var pointChartName = $('<div class="playerName">');
+				pointChartName.text(player.name);
+				var pointChartLast = $('<div class="lastPoints">');
+				var pointChartDiff = $('<div class="diffPoints">');
+				
+				pointChartDiv.append(pointChartName);
+				pointChartDiv.append(pointChartLast);
+				pointChartDiv.append(pointChartDiff);
+				
+				ui.gamePointChartEl.append(pointChartDiv);
+			});
+			this.playerTooltipEl.width($(getPlayerDiv(getPlayer().userId)).width());
+			
+			this.buildTrickCardElements(allPlayers);
+		},
+		
+		onHandChange:function(event, added, removed) {
+			// Remove any cards that shouldn't be shown
+			this.handEl.children('.card').each(function(i, c){
+				if(removed.indexOf($(c).attr('card')) != -1)
+					$(c).remove();
+			});
+
+			// Add any new cards
+			$.each(added, function(i, c){
+
+				var newCard = $('<div class="card">');
+				newCard.attr('card', c);
+				ui.handEl.append(newCard);
+
+				newCard.draggable({
+					revert:true,
+				});
+				
+				newCard.html(getCardHtml(c));
+
+			});
+			
+			// Update the size of the hand box
+			var totalHeight = $("#hand h3").height() * 3;
+			totalHeight += $("#hand .card").height() * Math.ceil(($("#hand .card").length / 8));
+			
+			this.handEl.height(totalHeight);
+		},
+		
+		// Builds the trick card elements (called whenever the player count changes)
+		buildTrickCardElements:function(players){
+			$("#trick .card").remove();
+			
+			for(var p in players)
+			{
+				$("#trick").append('<div class="card">');
+			}
+			
+			var trick = getTrickCards();
+			
+			$("#trick .card").each(function(i, c){
+				
+				// Get the "no card" image
+				$(c).html(getCardHtml(null));
+				
+				// Make all trick cards droppable
+				$(c).droppable({
+					greedy:true,
+					accept:'#hand .card',
+					tolerance:'pointer',
+					drop:function(event, ui){
+						
+						var draggedImg = ui.draggable.children('img');
+						var draggedCard = ui.draggable;
+						var droppedImg = $(event.target).children('img');
+						var ourCard = $(droppedImg).attr('card');
+						var card = $(draggedImg).attr('card');
+						var thisDraggable = ui.draggable;
+						if(!ourCard && card && isPlayersTurn())
+						{
+							requestPlayCard(card, function(data){
+								draggedCard.hide();
+								onGetGameState(data);
+								
+							}, function(data){
+								thisDraggable.animate({top:0, left:0});
+								onFailed(data);
+							});
+						}
+						else
+						{
+							ui.draggable.draggable('option', 'revert', true);
+						}
+					}
+				});
+			});
+		},
+		buildDeclarationMenu:function() {
+			var player = getPlayer();
+			var declarations = player.declarations;
+			this.declarationMenuEl.html("");
+			var form = $('<form id="declarationForm">');
+			$.each(declarations, function(i, d){
+				form.append($('<input type="radio" value="'+d+'" name="declaration">'+d+'</input>'));
+				form.append($('<br/>'));
+			});
+			form.append($('<input id="declareButton" type="button" value="Declare">').click(function(){
+				requestDeclaration(onGetGameState, onFailed);
+				ui.declarationMenuEl.hide();
+			}));
+			this.declarationMenuEl.append(form);
+		},
+		updatePlayerDeclarations:function()
+		{
+			this.playersEl.children(".player").each(function(i,p){
+				var playerEl = $(p);
+				var playerId = playerEl.attr('playerId');
+				var declareDiv = $(playerEl.find('.declaration'));
+				if(playerId == getPublicDeclarationUserId())
+					declareDiv.text(getPublicDeclarationString());
+				else
+					declareDiv.text("");
+			});
+		},
+		updatePlayerScores:function()
+		{
+			this.playersEl.children(".player").each(function(i,p){
+				var playerEl = $(p);
+				var playerId = playerEl.attr('playerId');
+				var trickDiv = $(playerEl.find('.playerTrickScore'));
+				var player = getPlayerByUserId(playerId);
+				trickDiv.text(player.trickPoints||0);
+				var gameDiv = $($(playerEl).find('.playerGameScore'));
+				gameDiv.text(player.gamePoints||0);
+			});
+		},
+		setPlayerTooltip:function(msg)
+		{
+			this.playerTooltipEl.html(msg);
+		},
+		showGamePointChart:function()
+		{
+			
+			this.gamePointChartEl.children('.playerPointChart').each(function(i, c){
+				var playerId = $(c).attr('playerid');
+				var pointHistory = getPlayerGamePointHistory(playerId);
+				
+				$(c).find('.lastPoints').text(pointHistory.last);
+				$(c).find('.diffPoints').text("+"+(pointHistory.total - pointHistory.last));
+			});
+			
+			var trickEl = $("#trick");
+			this.gamePointChartEl.show();
+			this.gamePointChartEl.offset(trickEl.offset());
+			this.gamePointChartEl.width(trickEl.width());
+			this.gamePointChartEl.height(trickEl.height());
+		},
+		requireCheckIn:function()
+		{
+			if(this.checkInTimer == null)
+			{
+				this.checkInButtonEl.show();
+				this.checkInTimer = setTimeout(function(){
+					requestCheckIn(onGetGameState, onFailed);
+					ui.checkInTimer = null;	
+					ui.checkInButtonEl.hide();
+				},
+				this.CHECKIN_TIMEOUT);
+			}
+		}
 }
 
-function showOverlay(overlay)
-{
-	$("#mask").fadeTo(500, 0.25);
-	$(overlay).show();
-}
+	
+
+

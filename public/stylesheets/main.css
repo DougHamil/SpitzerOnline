@@ -21,6 +21,7 @@
 	position:absolute;
 	background-color:#AAA;
 	border-radius:5px;
+	z-index:1000;
 }
 
 #gamePointChart > h3 {

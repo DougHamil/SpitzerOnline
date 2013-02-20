@@ -1,7 +1,7 @@
 
 function setStatusMessage(msg)
 {
-	statusMessageEl.html(msg);
+	ui.statusMessageEl.html(msg);
 }
 
 function getPlayerGamePointHistory(userId)
@@ -19,25 +19,6 @@ function isPlayerWinner()
 	return game.gameWinners.indexOf(game.userId) != -1;
 }
 
-function setPlayerTooltip(msg, playerId)
-{
-	var playerId = playerId || getCurrentPlayerId();
-	
-	if(playerId == undefined || playerId == null)
-		return;
-	
-	playerTooltipEl.html(msg);
-	
-	// Position the tooltip
-	var playerDiv = getPlayerDiv(playerId);
-	
-	var pos = playerDiv.offset();
-	pos.top += playerDiv.height();
-	
-	playerTooltipEl.show();
-	playerTooltipEl.offset(pos);
-}
-
 function getLastTrickWinnerId()
 {
 	return game.trickWinnerHistory[game.trickWinnerHistory.length - 1];
@@ -51,6 +32,11 @@ function getLastTrickPoints()
 function getNumPlayers()
 {
 	return game.players.length;
+}
+
+function getPlayerHand()
+{
+	return getPlayer().hand;
 }
 
 function getPlayer()
@@ -71,6 +57,11 @@ function getPublicDeclarationUserId()
 function getCurrentDealerId()
 {
 	return game.currentDealer;
+}
+
+function getCurrentPlayerName()
+{
+	return getCurrentPlayer().name;
 }
 
 function getCurrentPlayerId()
@@ -99,30 +90,6 @@ function getDealerName()
 	return getPlayerByUserId(dealerId).name;
 }
 
-function getHandChangeSet(current, target)
-{
-	if(!current)
-		return {add:target||[], remove:[]};
-	if(!target)
-		return {add:[], remove:current||[]};
-
-	var toRemove = [];
-	for(var card in current)
-	{
-		if(target.indexOf(current[card]) == -1)
-			toRemove.push(current[card]);
-	}
-
-	var toAdd = [];
-	for(var card in target)
-	{
-		if(current.indexOf(target[card]) == -1)
-			toAdd.push(target[card]);
-	}
-
-	return {add:toAdd, remove:toRemove};
-}
-
 function getTrickCards()
 {
 	return game.trickCardsOrdered;
@@ -133,9 +100,14 @@ function getTrickCardsAsMap()
 	return game.trickCards;
 }
 
-function getTrickTurnPlayer()
+function getCurrentPlayer()
 {
 	return getPlayerByUserId(game.currentPlayer);
+}
+
+function isCurrentPlayer()
+{
+	return game.currentPlayer == game.userId;
 }
 
 function isPlayersTurn()
@@ -146,6 +118,11 @@ function isPlayersTurn()
 function getTrickCardsHistory()
 {
 	return game.trickCardsHistory || [];
+}
+
+function getAllPlayers()
+{
+	return game.players;
 }
 
 function getPlayerByUserId(userId)

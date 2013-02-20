@@ -129,7 +129,6 @@ public class SpitzerGameState
 				this.currentPlayer = this.trickWinnerHistory.get(trickWinnerHistory.size() - 1);
 			
 			break;
-			
 		case POST_TRICK:
 			this.completeTrick();
 			break;
@@ -138,6 +137,9 @@ public class SpitzerGameState
 			this.distributeGamePoints();
 			break;
 		case DECLARATION:
+			// Declarations start with left of dealer
+			this.currentPlayer = getNextPlayer(getPlayerByUser(this.currentDealer)).userId;
+			playerCheckins = Sets.newHashSet();
 			evaluateDeclarations();
 			break;
 		case WAITING_FOR_DEAL:
@@ -229,6 +231,7 @@ public class SpitzerGameState
 		this.trickCardsHistory.add(trickCardsOrdered);
 		this.trickWinningCardHistory.add(highestCard);
 		this.playerCheckins = Sets.newHashSet();
+		this.currentPlayer = winner;
 	}
 	
 	public JsonNode playCard(User user, Card card)
@@ -253,8 +256,6 @@ public class SpitzerGameState
 		trickCards.put(card, player.userId);
 		trickCardsOrdered.add(card);
 		
-		this.currentPlayer = getNextPlayer(player).userId;
-		
 		// Have all the players played a card?
 		if(trickCards.size() >= players.size())
 		{
@@ -267,6 +268,10 @@ public class SpitzerGameState
 			}
 			else
 				this.moveToStage(GameStage.POST_TRICK);
+		}
+		else
+		{
+			this.currentPlayer = getNextPlayer(player).userId;			
 		}
 		
 		return null;
@@ -291,6 +296,8 @@ public class SpitzerGameState
 					this.moveToStage(GameStage.WAITING_FOR_DEAL);
 				break;
 			}
+			
+			this.playerCheckins.clear();
 		}
 		
 		return null;
@@ -311,39 +318,48 @@ public class SpitzerGameState
 			return ErrorUtils.error(GameError.INVALID_GAME_STAGE, this.stage);
 		if(!player.declarations.contains(declaration))
 			return ErrorUtils.error(GameError.INVALID_DECLARATION, declaration);
+		if(!this.currentPlayer.equals(user.id))
+			return ErrorUtils.error(GameError.OUT_OF_TURN, declaration, this.currentPlayer);
 		
-		// If there was already a zola call, and it conflicts, then invalid declaration
-		if(this.zolaDeclaration != null && SpitzerDeclaration.isZola(declaration))
+		// If it's an "effective" declaration, then stop the declaration process
+		if(!declaration.equals(SpitzerDeclaration.NONE) && !declaration.equals(SpitzerDeclaration.SNEAKER))
 		{
-			// If the new zola declaration outranks the old, then it becomes the zola declaration
-			if(this.zolaDeclaration.isOutrankedBy(declaration))
+			// if it's a zola, keep track of the zola player
+			if(SpitzerDeclaration.isZola(declaration))
 			{
 				this.zolaDeclaration = declaration;
 				this.zolaPlayer = user.id;
 			}
-			else
-			{
-				// This is an invalid declaration if it doesn't outrank the current one
-				return ErrorUtils.error(GameError.OUTRANKED_ZOLA, declaration);
-			}
-		}
-		else if(this.zolaDeclaration == null && SpitzerDeclaration.isZola(declaration))
-		{
-			// No previous zola declaration was made
-			this.zolaDeclaration = declaration;
-			this.zolaPlayer = user.id;
+			
+			this.publicDeclaration = declaration;
+			this.declarePlayer = user.id;
 		}
 		
-		// Valid declaration, assign it as active and remove options
 		player.activeDeclaration = declaration;
 		player.declarations.clear();
-
 		
-		// If everyone has declarations, progress the stage to in trick
-		if(allDeclarationsMade())
+		playerCheckins.add(user.id);
+		
+		// If everyone has declared, or a public declaration was made, then move to the trick
+		if(this.publicDeclaration != null || playerCheckins.size() == players.size())
 		{
+			// Every player with null declaration is forced to NONE
+			for(SpitzerPlayer nullplayer : players)
+			{
+				if(nullplayer.activeDeclaration == null)
+				{
+					nullplayer.activeDeclaration = SpitzerDeclaration.NONE;
+					nullplayer.declarations.clear();
+				}
+			}
 			this.determineTeams();
 			this.moveToStage(GameStage.TRICK);
+			this.playerCheckins.clear();			
+		}
+		else
+		{
+			// Let the next player declare a card
+			this.currentPlayer = getNextPlayer(player).userId;	
 		}
 		
 		return null;
@@ -351,7 +367,6 @@ public class SpitzerGameState
 	
 	private void determineTeams()
 	{
-		this.publicDeclaration = null;
 		this.blackTeam = Sets.newHashSet();
 		this.otherTeam = Sets.newHashSet();
 		
@@ -359,8 +374,6 @@ public class SpitzerGameState
 		if(this.zolaDeclaration != null)
 		{
 			// Zolas are always public
-			this.publicDeclaration = this.zolaDeclaration;
-			this.declarePlayer = this.zolaPlayer;
 			this.blackTeam.add(this.zolaPlayer);
 		}
 		else
@@ -397,8 +410,6 @@ public class SpitzerGameState
 						
 						this.blackTeam.add(player.userId);
 						this.blackTeam.add(acePlayer.userId);
-						this.declarePlayer = player.userId;						
-						this.publicDeclaration = player.activeDeclaration;	// Calls are public						
 						break;
 					}
 				}
@@ -413,8 +424,6 @@ public class SpitzerGameState
 					{
 						this.blackTeam.add(player.userId);
 						this.blackTeam.add(trickWinnerHistory.get(0));
-						this.declarePlayer = player.userId;						
-						this.publicDeclaration = player.activeDeclaration;
 						break;
 					}
 				}
@@ -569,6 +578,7 @@ public class SpitzerGameState
 		this.stage = GameStage.WAITING_FOR_PLAYERS;
 		this.maxPlayers = Game.NUM_PLAYERS;
 
+		this.playerCheckins = Sets.newHashSet();
 		newRound();
 		
 		for(User userPlayer : game.players)
@@ -578,6 +588,7 @@ public class SpitzerGameState
 
 		// Host will be dealer to begin
 		this.currentDealer = game.hostUserId;
+		this.currentPlayer = this.currentDealer;
 	}
 	
 	public SpitzerPlayer getPlayerByUser(Integer id)

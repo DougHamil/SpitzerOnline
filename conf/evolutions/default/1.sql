@@ -4,7 +4,7 @@
 # --- !Ups
 
 create table games (
-  id                        integer auto_increment not null,
+  id                        integer not null,
   host_user_id              integer,
   state                     integer,
   game_state_string         LONGTEXT,
@@ -13,7 +13,7 @@ create table games (
 ;
 
 create table Users (
-  id                        integer auto_increment not null,
+  id                        integer not null,
   name                      varchar(255),
   constraint uq_Users_name unique (name),
   constraint pk_Users primary key (id))
@@ -25,6 +25,10 @@ create table games_Users (
   Users_id                       integer not null,
   constraint pk_games_Users primary key (games_id, Users_id))
 ;
+create sequence games_seq;
+
+create sequence Users_seq;
+
 
 
 
@@ -34,13 +38,17 @@ alter table games_Users add constraint fk_games_Users_Users_02 foreign key (User
 
 # --- !Downs
 
-SET FOREIGN_KEY_CHECKS=0;
+SET REFERENTIAL_INTEGRITY FALSE;
 
-drop table games;
+drop table if exists games;
 
-drop table games_Users;
+drop table if exists games_Users;
 
-drop table Users;
+drop table if exists Users;
 
-SET FOREIGN_KEY_CHECKS=1;
+SET REFERENTIAL_INTEGRITY TRUE;
+
+drop sequence if exists games_seq;
+
+drop sequence if exists Users_seq;
 

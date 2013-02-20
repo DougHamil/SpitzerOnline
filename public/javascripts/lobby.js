@@ -1,20 +1,16 @@
 var gameId;
 var game;
-var firstPoll = true;
 
 function onGameStateUpdate()
 {
-	if(firstPoll)
-	{
-		initializeUI();
-		firstPoll = false;
-	}
-	updateUI();
+	eventManager.update(game);
 }
 
 function beginPoll(gid)
 {
 	gameId = gid;
+	
+	ui.init();
 	
 	poll();
 }
