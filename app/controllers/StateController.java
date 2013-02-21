@@ -4,6 +4,7 @@ import play.mvc.Controller;
 import game.SpitzerDeclaration;
 import game.SpitzerGameState;
 import game.cards.Card;
+import game.player.bot.SpitzerBotType;
 
 import org.codehaus.jackson.JsonNode;
 
@@ -14,6 +15,31 @@ import play.mvc.*;
 
 public class StateController extends Controller
 {
+	
+	@BodyParser.Of(BodyParser.Json.class)
+    public static Result addBot(Integer gameId)
+    {
+    	Game game = GameController.getGameById(gameId);
+    	User user = UserController.getCurrentUser();
+    	
+    	if(!validateGame(game, user))
+    		return redirect(controllers.routes.HomeController.index());
+    	
+    	JsonNode json = request().body().asJson();
+    	if(json.findPath("type") == null)
+    		return badRequest("Missing parameter [type]");
+    	
+    	String botType = json.findPath("type").getTextValue();
+    	
+    	JsonNode error = game.getGameState().addBot(SpitzerBotType.fromName(botType));
+    	if(error != null)
+    		return badRequest(error);
+    	
+    	game.update();
+    	
+    	return ok(game.toJson(user));
+    }
+    
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result playCard(Integer gameId)
 	{

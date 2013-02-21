@@ -10,6 +10,7 @@ var ui = {
 		gamePointChartEl:$("#gamePointChart"),
 		playersEl:$("#players"),
 		handEl:$("#hand"),
+		trickEl:$("#trick"),
 		// Variables
 		checkInTimer:null,
 		
@@ -23,9 +24,13 @@ var ui = {
 			this.gamePointChartEl = $("#gamePointChart");
 			this.playersEl = $("#players");
 			this.handEl = $("#hand");
-
-			this.buildCardTable();
+			this.trickEl = $("#trick");			
 			
+			$(window).resize(function(){
+				if(game != null)
+					ui.updateTooltipPosition();
+			})
+
 			// UI events
 			this.dealButtonEl.hide();
 			this.dealButtonEl.click(function(){
@@ -70,13 +75,7 @@ var ui = {
 			});
 			
 			// Move the tooltip
-			var playerDiv = getPlayerDiv(newPlayerId);
-			
-			var pos = playerDiv.offset();
-			pos.top += playerDiv.height();
-			
-			this.playerTooltipEl.show();
-			this.playerTooltipEl.offset(pos);
+			this.updateTooltipPosition();
 			
 			// Depending on the current stage, we may need to change the UI
 			switch(stage)
@@ -110,7 +109,8 @@ var ui = {
 		// Called when the cards in the trick have changed
 		onTrickChange:function(event, oldTrick, newTrick) {
 			$("#trick .card").each(function(i, c){
-				$(c).html(getCardHtml(newTrick[i]));
+				$(c).find(".cardImage").attr("src", getCardUrl(newTrick[i]));
+				$(c).find(".cardPlayer").text(getPlayerNameOfTrickCard(i));
 				
 				// Disable any trick cards that have been dropped
 				if(newTrick[i])
@@ -141,6 +141,8 @@ var ui = {
 			{
 			case "WAITING_FOR_PLAYERS":
 				this.setPlayerTooltip('Hosting');
+				this.trickEl.hide();
+				this.handEl.hide();
 			break;
 			case "WAITING_FOR_DEAL":
 				this.setPlayerTooltip('Dealing');
@@ -191,12 +193,18 @@ var ui = {
 			
 			switch(oldStage)
 			{
+			case "WAITING_FOR_PLAYERS":
+				this.trickEl.show();
+				this.handEl.show();
+				break;
 			case "DECLARATION":
 				this.updatePlayerDeclarations();
 				break;
 			case "POST_ROUND":
 				this.gamePointChartEl.hide();
+				this.trickEl.show();
 				this.updatePlayerScores();
+				this.updatePlayerDeclarations();
 				break;
 			}
 		},
@@ -280,7 +288,10 @@ var ui = {
 			
 			for(var p in players)
 			{
-				$("#trick").append('<div class="card">');
+				var card = $('<div class="card">');
+				card.append($('<div class="cardPlayer">'));
+				card.append($('<img class="cardImage">'));
+				$("#trick").append(card);
 			}
 			
 			var trick = getTrickCards();
@@ -288,7 +299,7 @@ var ui = {
 			$("#trick .card").each(function(i, c){
 				
 				// Get the "no card" image
-				$(c).html(getCardHtml(null));
+				$(c).find(".cardImage").attr("src", getCardUrl(null));
 				
 				// Make all trick cards droppable
 				$(c).droppable({
@@ -376,11 +387,8 @@ var ui = {
 				$(c).find('.diffPoints').text("+"+(pointHistory.total - pointHistory.last));
 			});
 			
-			var trickEl = $("#trick");
 			this.gamePointChartEl.show();
-			this.gamePointChartEl.offset(trickEl.offset());
-			this.gamePointChartEl.width(trickEl.width());
-			this.gamePointChartEl.height(trickEl.height());
+			this.trickEl.hide();
 		},
 		requireCheckIn:function()
 		{
@@ -395,8 +403,14 @@ var ui = {
 				this.CHECKIN_TIMEOUT);
 			}
 		},
-		buildCardTable:function(){
-
+		updateTooltipPosition:function(){
+			var playerDiv = getPlayerDiv(getCurrentPlayerId());
+			
+			var pos = playerDiv.offset();
+			pos.top += playerDiv.height();
+			
+			this.playerTooltipEl.show();
+			this.playerTooltipEl.offset(pos);
 		}
 }
 

@@ -24,7 +24,7 @@ var eventManager = {
 				$(this).trigger('handChange', this.getHandChangeSet(this.oldPlayerHand, getPlayerHand()));
 			
 			// Check for active player change
-			if(this.oldState == null || this.oldState.currentPlayer != state.currentPlayer)
+			if(this.oldState == null || this.oldState.currentPlayer != state.currentPlayer || this.oldState.stage != state.stage)
 				$(this).trigger('currentPlayerChange', [this.oldState ? this.oldState.currentPlayer : null, state.currentPlayer, state.stage]);
 			
 			// Check for checkIn change

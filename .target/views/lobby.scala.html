@@ -14,6 +14,7 @@
 		routes.requestDeclaration = "@routes.StateController.declare(game.id)";
 		routes.requestPlayCard = "@routes.StateController.playCard(game.id)";
 		routes.requestCheckIn = "@routes.StateController.checkIn(game.id)";
+		routes.requestAddBot = "@routes.StateController.addBot(game.id)";
 		var IMAGE_EXTENSION = 'svg';
 		var CARD_IMAGE_PATH = "@routes.Assets.at("images/cards")"+"/";
 		
@@ -21,17 +22,17 @@
 			beginPoll(@game.id);
 		});
 	</script>
-	<div id="mask"></div>
+	<input type="button" value="Add First Card Bot" onclick="requestAddBot('FirstCard', onGetGameState, onFailed);">
 	<div id="playerTooltip"></div>
-	<div id="gamePointChart" style="display:none">
-		<h3>Game Points Breakdown</h3>
-	</div>
+
 	<div id="container">
 	<h1>@game.name</h1>
 
 	<div id="players">
 	</div>
-	
+	<div id="gamePointChart" style="display:none">
+		<h3>Game Points Breakdown</h3>
+	</div>
 	<div id="trick">
 		<h3>In Play</h3>
 	</div>
@@ -48,5 +49,50 @@
 	<br/>
 	<div id="statusMessage"></div>
 	
+	</div>
+	
+	<div id="trumpSuitDisplay">
+		<h3>Trump Suit</h3>
+		<img class="card" src="@routes.Assets.at("images/cards/queen_of_clubs.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/seven_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/queen_of_spades.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/queen_of_hearts.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/queen_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/jack_of_clubs.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/jack_of_spades.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/jack_of_hearts.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/jack_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/ace_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/ten_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/king_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/nine_of_diamonds.svg")" />
+		<img class="card" src="@routes.Assets.at("images/cards/eight_of_diamonds.svg")" />
+		<h3>Points</h3>
+		<table>
+			<tr>
+				<td>Ace</td>
+				<td>11</td>
+			</tr>
+			<tr>
+				<td>Ten</td>
+				<td>10</td>
+			</tr>
+			<tr>
+				<td>King</td>
+				<td>4</td>
+			</tr>
+			<tr>
+				<td>Queen</td>
+				<td>3</td>
+			</tr>
+			<tr>
+				<td>Jack</td>
+				<td>2</td>
+			</tr>
+			<tr>
+				<td>Nine, Eight, Seven</td>
+				<td>0</td>
+			</tr>
+		</table>
 	</div>
 }

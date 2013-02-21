@@ -14,6 +14,15 @@ function getPlayerGamePointHistory(userId)
 	return {last:lastPoints, total:totalPoints};
 }
 
+function getPlayerNameOfTrickCard(trickIndex)
+{
+	if(game == null || game.trickCardPlayers.length <= trickIndex)
+		return "";
+	
+	var playerId = game.trickCardPlayers[trickIndex];
+	return getPlayerByUserId(playerId).name;
+}
+
 function isPlayerWinner()
 {
 	return game.gameWinners.indexOf(game.userId) != -1;

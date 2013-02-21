@@ -1,3 +1,26 @@
+#trumpSuitDisplay .card {
+	width:70px;
+	height:88px;
+	padding:0;
+	margin:0;
+}
+#trumpSuitDisplay {
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+}
+#trumpSuitDisplay h3 {
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+}
+#trumpSuitDisplay table {
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+
 #container {
 	width:900px;
 	margin-left:auto;
@@ -18,7 +41,6 @@
 }
 
 #gamePointChart {
-	position:absolute;
 	background-color:#AAA;
 	border-radius:5px;
 	z-index:1000;
@@ -103,7 +125,7 @@
 	margin-right:auto;
 }
 
-#hand, #trick {
+#hand, #trick{
 	margin-left:auto;
 	margin-right:auto;
 	width:900px;

@@ -22,6 +22,10 @@ POST /spitzer/games/playcard					controllers.StateController.playCard(gameId : I
 # Player wants to check in
 POST /spitzer/games/checkin						controllers.StateController.checkIn(gameId : Int)
 
+# Player wants to add a bot
+POST /spitzer/games/addbot						controllers.StateController.addBot(gameId : Int)
+
+
 #########################
 # GAME
 #########################

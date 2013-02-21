@@ -6,3 +6,11 @@ function getCardHtml(cardName)
 	
 	return $('<img class="cardImage" card="'+cardName+'" src="'+CARD_IMAGE_PATH+cardName.toLowerCase()+'.'+IMAGE_EXTENSION+'"></img>');
 }
+
+function getCardUrl(cardName)
+{
+	if(!cardName)
+		return CARD_IMAGE_PATH+'nocard.'+IMAGE_EXTENSION;
+	
+	return CARD_IMAGE_PATH+cardName.toLowerCase()+'.'+IMAGE_EXTENSION;
+}

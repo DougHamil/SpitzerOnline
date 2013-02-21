@@ -3,11 +3,28 @@ package game.player;
 import game.SpitzerDeclaration;
 import game.cards.Card;
 import game.cards.Cards;
+import game.player.bot.FirstCardSpitzerBot;
+import game.player.bot.SpitzerBot;
 
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonSubTypes;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+
 import com.google.common.collect.Lists;
 
+/**
+ * Due to our use of JSON mapping, we must explicity declare each subclass for the bots
+ */
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+
+	// Define all spitzer bot classes here
+      @JsonSubTypes.Type(value=FirstCardSpitzerBot.class, name="FirstCardSpitzerBot")
+
+     // @JsonSubTypes.Type(value=Cat.class, name="cat")
+
+  }) 
 public class SpitzerPlayer
 {
 	public String name;
@@ -39,7 +56,11 @@ public class SpitzerPlayer
 		this.activeDeclaration = player.activeDeclaration;
 	}
 
-
+	public void orderCards()
+	{
+		this.hand.orderBySuit();
+	}
+	
 	// This method is called when this player is not the active player
 	// Remove all information that could be used to cheat
 	public void sanitize()

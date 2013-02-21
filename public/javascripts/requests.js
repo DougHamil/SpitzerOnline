@@ -9,6 +9,20 @@ function requestCheckIn(suc, fail)
 	});
 }
 
+function requestAddBot(botType, suc, fail)
+{
+	var data = {type:botType};
+	$.ajax({
+		url:routes.requestAddBot,
+		type:'POST',
+		dataType:'json',
+		contentType:'application/json; charset=utf-8',
+		data:JSON.stringify(data),
+		success:suc,
+		error:fail
+	});
+}
+
 function requestLogout()
 {
 	window.location = routes.requestLogout;

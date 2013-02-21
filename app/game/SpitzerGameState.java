@@ -12,6 +12,8 @@ import game.cards.SpitzerDeck;
 import game.cards.Suit;
 import game.player.SpitzerPlayer;
 import game.player.SpitzerPlayers;
+import game.player.bot.SpitzerBot;
+import game.player.bot.SpitzerBotType;
 
 import models.Game;
 import models.User;
@@ -37,11 +39,14 @@ public class SpitzerGameState
 	public Set<Integer> blackTeam;
 	public Set<Integer> otherTeam;
 	public Map<Card, Integer> trickPointsPerCard;
+	public Set<Integer> bots;
 	public GameStage stage;
 	public Integer trickNumber;
 	public Map<Card, Integer> trickCards;
 	public List<Card> trickCardsOrdered;
+	public List<Integer> trickCardPlayers;
 	public List<List<Card>> trickCardsHistory;
+	public List<List<Integer>> trickCardPlayersHistory;
 	public List<Card> trickWinningCardHistory;
 	public List<Integer> trickPointHistory;
 	public List<Integer> trickWinnerHistory;
@@ -75,6 +80,8 @@ public class SpitzerGameState
 			copied.trickCards = Maps.newHashMap(state.trickCards);
 		if(state.trickCardsOrdered != null)
 			copied.trickCardsOrdered = Lists.newArrayList(state.trickCardsOrdered);
+		if(state.trickCardPlayers != null)
+			copied.trickCardPlayers = Lists.newArrayList(state.trickCardPlayers);
 		if(state.trickCardsHistory != null)
 			copied.trickCardsHistory = Lists.newArrayList(state.trickCardsHistory);
 		if(state.trickWinningCardHistory != null)
@@ -85,11 +92,14 @@ public class SpitzerGameState
 			copied.trickWinnerHistory = Lists.newArrayList(state.trickWinnerHistory);
 		if(state.playerCheckins != null)
 			copied.playerCheckins = Sets.newHashSet(state.playerCheckins);
+		if(state.trickCardPlayersHistory != null)
+			copied.trickCardPlayersHistory = Lists.newArrayList(state.trickCardPlayersHistory);
 		copied.zolaDeclaration = state.zolaDeclaration;
 		copied.zolaPlayer = state.zolaPlayer;
 		copied.publicDeclaration = state.publicDeclaration;
 		copied.declarePlayer = state.declarePlayer;
 		copied.userId = state.userId;
+		copied.bots = state.bots;
 
 		return copied;
 	}
@@ -109,11 +119,22 @@ public class SpitzerGameState
 			if(!player.userId.equals(user.id))
 				player.sanitize();
 		}
-
+		
 		// This game state belongs to this user
 		copy.userId = user.id;
 
 		return copy;
+	}
+	
+	public JsonNode addBot(SpitzerBot bot)
+	{
+		if(this.players.size() >= this.maxPlayers)
+			return ErrorUtils.error(GameError.GAME_IS_FULL, this.maxPlayers, this.players.size(), bot);
+		
+		// Add the bot
+		this.addPlayer(bot);
+		
+		return null;
 	}
 	
 	private void moveToStage(GameStage newStage)
@@ -139,7 +160,6 @@ public class SpitzerGameState
 		case DECLARATION:
 			// Declarations start with left of dealer
 			this.currentPlayer = getNextPlayer(getPlayerByUser(this.currentDealer)).userId;
-			playerCheckins = Sets.newHashSet();
 			evaluateDeclarations();
 			break;
 		case WAITING_FOR_DEAL:
@@ -156,6 +176,35 @@ public class SpitzerGameState
 		}
 		
 		this.stage = newStage;
+		this.resetCheckins();		
+		SpitzerBot bot = this.getCurrentPlayerAsBot();
+		
+		// Handle any bot actions here
+		if(bot != null)
+		{
+			switch(this.stage)
+			{
+			case DECLARATION:
+				// If it's a bot's turn to declare, let it
+				this.handleDeclaration(bot, bot.declare(this));
+				break;
+			case WAITING_FOR_DEAL:
+				// If it's a bot's turn to deal, then deal
+				this.dealCards((SpitzerPlayer)bot);
+				break;
+			case TRICK:
+				// If it's a bot's turn to play, let it
+				this.playCard((SpitzerPlayer)bot, bot.playCard(this));
+				break;
+			}
+		}
+	}
+	
+	private SpitzerBot getCurrentPlayerAsBot()
+	{
+		if(this.bots.contains(this.currentPlayer))
+			return (SpitzerBot)this.getPlayerByUser(this.currentPlayer);
+		return null;
 	}
 
 	private void distributeGamePoints()
@@ -219,6 +268,16 @@ public class SpitzerGameState
 		return total;
 	}
 
+	private void resetCheckins()
+	{
+		this.playerCheckins = Sets.newHashSet();
+		// Add all bot checkins automatically
+		for(Integer botId : this.bots)
+		{
+			this.handleCheckin(this.getPlayerByUser(botId));
+		}
+	}
+	
 	// Called after a trick is over, or a round is over
 	private void completeTrick()
 	{
@@ -229,6 +288,7 @@ public class SpitzerGameState
 		this.trickWinnerHistory.add(trickCards.get(highestCard));
 		this.trickPointHistory.add(SpitzerDeck.getPointsForCards(trickCards.keySet()));
 		this.trickCardsHistory.add(trickCardsOrdered);
+		this.trickCardPlayersHistory.add(trickCardPlayers);
 		this.trickWinningCardHistory.add(highestCard);
 		this.playerCheckins = Sets.newHashSet();
 		this.currentPlayer = winner;
@@ -236,10 +296,13 @@ public class SpitzerGameState
 	
 	public JsonNode playCard(User user, Card card)
 	{
-		SpitzerPlayer player = getPlayerByUser(user);
-		
+		return this.playCard(getPlayerByUser(user), card);
+	}
+	
+	public JsonNode playCard(SpitzerPlayer player, Card card)
+	{
 		if(player == null)
-			return ErrorUtils.error(GameError.PLAYER_NOT_IN_GAME, user);
+			return ErrorUtils.error(GameError.PLAYER_NOT_IN_GAME, player);
 		if(!this.stage.equals(GameStage.TRICK))
 			return ErrorUtils.error(GameError.INVALID_GAME_STAGE, this.stage);
 		if(!player.hand.hasCard(card))
@@ -255,6 +318,7 @@ public class SpitzerGameState
 		player.hand.remove(card);
 		trickCards.put(card, player.userId);
 		trickCardsOrdered.add(card);
+		trickCardPlayers.add(player.userId);
 		
 		// Have all the players played a card?
 		if(trickCards.size() >= players.size())
@@ -271,16 +335,32 @@ public class SpitzerGameState
 		}
 		else
 		{
-			this.currentPlayer = getNextPlayer(player).userId;			
+			this.currentPlayer = getNextPlayer(player).userId;
+
+			SpitzerBot bot = this.getCurrentPlayerAsBot();
+			if(bot != null)
+			{
+				return this.playCard((SpitzerPlayer)bot, bot.playCard(this));
+			}
 		}
 		
 		return null;
 	}
 	
+	public JsonNode handleCheckin(SpitzerBot bot)
+	{
+		return this.handleCheckin((SpitzerPlayer)bot);
+	}
+	
 	public JsonNode handleCheckin(User user)
 	{
+		return this.handleCheckin(this.getPlayerByUser(user));
+	}
+	
+	public JsonNode handleCheckin(SpitzerPlayer player)
+	{
 		if(this.stage == GameStage.POST_TRICK || this.stage == GameStage.POST_ROUND || this.stage == GameStage.POST_GAME)
-			this.playerCheckins.add(user.id);
+			this.playerCheckins.add(player.userId);
 		else
 			return ErrorUtils.error(GameError.INVALID_GAME_STAGE, stage);
 		
@@ -303,6 +383,11 @@ public class SpitzerGameState
 		return null;
 	}
 	
+	public Collection<Card> getValidCardsForPlayer(SpitzerPlayer player)
+	{
+		return SpitzerDeck.getValidCardsForTrick(this.publicDeclaration, this.declarePlayer, player.userId, player.hand, trickCardsOrdered);
+	}
+	
 	public boolean validatePlayCard(SpitzerPlayer player, Card card)
 	{
 		return SpitzerDeck.getValidCardsForTrick(this.publicDeclaration, this.declarePlayer, player.userId, player.hand, trickCardsOrdered).contains(card);
@@ -310,15 +395,18 @@ public class SpitzerGameState
 	
 	public JsonNode handleDeclaration(User user, SpitzerDeclaration declaration)
 	{
-		SpitzerPlayer player = getPlayerByUser(user);
-		
+		return this.handleDeclaration(this.getPlayerByUser(user), declaration);
+	}
+	
+	public JsonNode handleDeclaration(SpitzerPlayer player, SpitzerDeclaration declaration)
+	{
 		if(player == null)
-			return ErrorUtils.error(GameError.PLAYER_NOT_IN_GAME, user);
+			return ErrorUtils.error(GameError.PLAYER_NOT_IN_GAME, player);
 		if(!this.stage.equals(GameStage.DECLARATION))
 			return ErrorUtils.error(GameError.INVALID_GAME_STAGE, this.stage);
 		if(!player.declarations.contains(declaration))
 			return ErrorUtils.error(GameError.INVALID_DECLARATION, declaration);
-		if(!this.currentPlayer.equals(user.id))
+		if(!this.currentPlayer.equals(player.userId))
 			return ErrorUtils.error(GameError.OUT_OF_TURN, declaration, this.currentPlayer);
 		
 		// If it's an "effective" declaration, then stop the declaration process
@@ -328,20 +416,18 @@ public class SpitzerGameState
 			if(SpitzerDeclaration.isZola(declaration))
 			{
 				this.zolaDeclaration = declaration;
-				this.zolaPlayer = user.id;
+				this.zolaPlayer = player.userId;
 			}
 			
 			this.publicDeclaration = declaration;
-			this.declarePlayer = user.id;
+			this.declarePlayer = player.userId;
 		}
 		
 		player.activeDeclaration = declaration;
 		player.declarations.clear();
 		
-		playerCheckins.add(user.id);
-		
 		// If everyone has declared, or a public declaration was made, then move to the trick
-		if(this.publicDeclaration != null || playerCheckins.size() == players.size())
+		if(this.publicDeclaration != null || this.allDeclarationsMade())
 		{
 			// Every player with null declaration is forced to NONE
 			for(SpitzerPlayer nullplayer : players)
@@ -354,12 +440,18 @@ public class SpitzerGameState
 			}
 			this.determineTeams();
 			this.moveToStage(GameStage.TRICK);
-			this.playerCheckins.clear();			
 		}
 		else
 		{
 			// Let the next player declare a card
-			this.currentPlayer = getNextPlayer(player).userId;	
+			this.currentPlayer = getNextPlayer(player).userId;
+			
+			// Let the bots declare, too
+			SpitzerBot bot = this.getCurrentPlayerAsBot();
+			if(bot != null)
+			{
+				return this.handleDeclaration((SpitzerPlayer)bot, bot.declare(this));
+			}
 		}
 		
 		return null;
@@ -459,16 +551,19 @@ public class SpitzerGameState
 	
 	public JsonNode dealCards(User user)
 	{
-		SpitzerPlayer userPlayer = getPlayerByUser(user);
+		return this.dealCards(getPlayerByUser(user));
+	}
+	
+	public JsonNode dealCards(SpitzerPlayer player)
+	{
+		if(player == null)
+			return ErrorUtils.error(GameError.PLAYER_NOT_IN_GAME, player);
 		
-		if(userPlayer == null)
-			return ErrorUtils.error(GameError.PLAYER_NOT_IN_GAME, user);
-		
-		if(!userPlayer.userId.equals(currentDealer))
-			return ErrorUtils.error(GameError.PLAYER_NOT_DEALER, Lists.newArrayList(currentDealer, userPlayer));
+		if(!player.userId.equals(currentDealer))
+			return ErrorUtils.error(GameError.PLAYER_NOT_DEALER, Lists.newArrayList(currentDealer, player));
 		
 		if(!this.stage.equals(GameStage.WAITING_FOR_DEAL))
-			return ErrorUtils.error(GameError.GAME_NOT_FULL, user);
+			return ErrorUtils.error(GameError.GAME_NOT_FULL, player);
 		
 		SpitzerDeck deck = new SpitzerDeck();
 		deck.shuffle();
@@ -478,12 +573,17 @@ public class SpitzerGameState
 		// Deal all cards
 		while(!deck.cards.isEmpty())
 		{
-			for(SpitzerPlayer player : players)
+			for(SpitzerPlayer aPlayer : players)
 			{
 				if(deck.cards.isEmpty())
 					break;
-				player.addCardToHand(deck.draw());
+				aPlayer.addCardToHand(deck.draw());
 			}
+		}
+		
+		for(SpitzerPlayer aPlayer : players)
+		{
+			aPlayer.orderCards();
 		}
 		
 		this.moveToStage(GameStage.DECLARATION);
@@ -538,6 +638,7 @@ public class SpitzerGameState
 		this.trickNumber++;
 		this.trickCards = Maps.newHashMap();
 		this.trickCardsOrdered = Lists.newArrayList();
+		this.trickCardPlayers = Lists.newArrayList();
 	}
 	
 	// Called when all tricks have been played for a dealing, set up a new dealing
@@ -552,14 +653,21 @@ public class SpitzerGameState
 			this.zolaPlayer = null;
 		}
 		
-		this.publicDeclaration = null;
-		this.declarePlayer = null;
+		if(this.zolaDeclaration == null)
+		{
+			this.publicDeclaration = null;
+			this.declarePlayer = null;
+			
+			for(SpitzerPlayer player : players)
+				player.activeDeclaration = null;
+		}
 		
 		// Reset all trick histories
 		this.trickWinnerHistory = Lists.newArrayList();
 		this.trickPointHistory = Lists.newArrayList();
 		this.trickCardsHistory = Lists.newArrayList();
 		this.trickWinningCardHistory = Lists.newArrayList();
+		this.trickCardPlayersHistory = Lists.newArrayList();
 		
 		// Reset all trick points
 		for(SpitzerPlayer player : players)
@@ -579,6 +687,7 @@ public class SpitzerGameState
 		this.maxPlayers = Game.NUM_PLAYERS;
 
 		this.playerCheckins = Sets.newHashSet();
+		this.bots = Sets.newHashSet();
 		newRound();
 		
 		for(User userPlayer : game.players)
@@ -607,6 +716,14 @@ public class SpitzerGameState
 		return getPlayerByUser(user.id);
 	}
 	
+	public void addPlayer(SpitzerPlayer player)
+	{
+		this.players.add(player);
+		
+		if(this.players.size() >= Game.NUM_PLAYERS)
+			this.moveToStage(GameStage.WAITING_FOR_DEAL);
+	}
+	
 	public void addPlayer(User user)
 	{
 		if(getPlayerByUser(user) != null)
@@ -615,10 +732,17 @@ public class SpitzerGameState
 		SpitzerPlayer player = new SpitzerPlayer();
 		player.userId = user.id;
 		player.name = user.name;
-		this.players.add(player);
 		
-		if(this.players.size() >= Game.NUM_PLAYERS)
-			this.moveToStage(GameStage.WAITING_FOR_DEAL);
+		this.addPlayer(player);
+	}
+	
+	public void addPlayer(SpitzerBot bot)
+	{
+		SpitzerPlayer player = (SpitzerPlayer)bot;
+		player.userId = -(this.bots.size() + 1);
+		player.name = SpitzerBotType.getNameOfBot(bot) + "("+player.userId+")";
+		this.bots.add(player.userId);
+		this.addPlayer(player);
 	}
 
 	public static SpitzerGameState fromJson(String jsonString)
