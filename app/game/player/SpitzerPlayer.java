@@ -6,12 +6,14 @@ import game.cards.Cards;
 import game.player.bot.FirstCardSpitzerBot;
 import game.player.bot.SpitzerBot;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonSubTypes;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Due to our use of JSON mapping, we must explicity declare each subclass for the bots
@@ -35,6 +37,7 @@ public class SpitzerPlayer
 	public Cards hand;
 	public List<SpitzerDeclaration> declarations;
 	public List<Integer> gamePointHistory = Lists.newArrayList();
+	public Collection<Card> validCards = null;
 	public SpitzerDeclaration activeDeclaration;
 
 	public SpitzerPlayer(){}
@@ -53,6 +56,8 @@ public class SpitzerPlayer
 			this.declarations = Lists.newArrayList(player.declarations);
 		if(player.gamePointHistory != null)
 			this.gamePointHistory = Lists.newArrayList(player.gamePointHistory);
+		if(player.validCards != null)
+			this.validCards = Sets.newHashSet(player.validCards);
 		this.activeDeclaration = player.activeDeclaration;
 	}
 

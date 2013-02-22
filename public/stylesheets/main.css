@@ -1,3 +1,115 @@
+/*
+ 	Bot editor
+ */
+ #botEditorTab {
+ 	position:absolute;
+ }
+
+/*
+	Winner/Loser Messages
+*/
+
+.winnerMessage {
+	display:inline;
+	text-align:center; /* center horizontally */
+    vertical-align:middle; /* center vertically */
+	position:absolute;
+	top:40%;
+	left:40%;
+	font-size:10em;
+	font-weight:bold;
+	-webkit-animation: pulseWin 5s ease-in-out 0 infinite alternate;
+	-moz-animation: pulseWin 5s ease-in-out 0 infinite alternate;	
+}	
+
+.loserMessage {
+	display:inline;
+	text-align:center; /* center horizontally */
+    vertical-align:middle; /* center vertically */
+	position:absolute;
+	top:40%;
+	left:40%;
+	font-size:10em;
+	font-weight:bold;
+	-webkit-animation: pulseLose 3s ease-in-out 0 infinite alternate;
+	-moz-animation: pulseLose 3s ease-in-out 0 infinite alternate;
+}
+
+/*
+	Animations
+*/
+@-webkit-keyframes spinz
+{
+from {-webkit-transform: rotatey(0deg)}
+to {-webkit-transform:rotatey(360deg)}
+}
+
+@-moz-keyframes spinz 
+{
+from {-moz-transform: rotatey(0deg)}
+to {-moz-transform:rotatey(360deg)}
+}
+
+@-webkit-keyframes pulseLose
+{
+from {-webkit-transform: scale(1,1); color:#EEE}
+to {-webkit-transform:scale(1.5,1.5); color:#E44}
+}
+
+@-moz-keyframes pulseLose
+{
+from {-moz-transform: scale(1,1); color:#EEE}
+to {-moz-transform:scale(1.5,1.5); color:#E44}
+}
+
+@-webkit-keyframes pulseWin
+{
+from {-webkit-transform: scale(1,1); color:#EEE}
+to {-webkit-transform:scale(1.5,1.5); color:#4E4}
+}
+
+@-moz-keyframes pulseWin
+{
+from {-moz-transform: scale(1,1); color:#EEE}
+to {-moz-transform:scale(1.5,1.5); color:#4E4}
+}
+
+/*
+	Card Styling
+*/
+.card {
+	
+	position:relative;
+	margin:2px;
+	width:100px;
+	height:134px;
+	display:inline-block;
+	text-align:left;
+
+}
+
+.card .cardPlayer {
+	text-shadow:0.1em 0.1em #333;
+}
+
+.card img {
+	width:100%;
+	height:100%;
+	border-radius:5px;
+	margin:0;
+	padding:0;
+}
+
+.card .cardPoints {
+	color:#EEE;
+	background-color:#555;
+	position:absolute;
+	border-radius:5px;
+	padding:5px;
+	top:100%;
+	left:0%;
+}
+
 #trumpSuitDisplay .card {
 	width:70px;
 	height:88px;
@@ -19,7 +131,6 @@
 	margin-left:auto;
 	margin-right:auto;
 }
-
 
 #container {
 	width:900px;
@@ -79,6 +190,11 @@
 	border-radius:5px;
 	clear:both;
 	height:100px;
+}
+
+.player.active .playerName{
+	-webkit-animation: spinz 5s ease-in-out 0 infinite alternate;
+	-moz-animation: spinz 5s ease-in-out 0 infinite alternate;
 }
 
 .player.active {
@@ -141,19 +257,7 @@
 	margin-left:auto;
 	margin-right:auto;
 }
-.card {
-	margin:2px;
-	width:100px;
-	height:134px;
-	display:inline-block;
-}
-.card img {
-	width:100%;
-	height:100%;
-	border-radius:5px;
-	margin:0;
-	padding:0;
-}
+
 
 .clear {
 	clear:both;	

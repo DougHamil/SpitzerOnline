@@ -14,6 +14,23 @@ function getPlayerGamePointHistory(userId)
 	return {last:lastPoints, total:totalPoints};
 }
 
+function getValidCards()
+{
+	var player = getCurrentPlayer();
+	return player.validCards;
+}
+
+function getTrickPointsForCard(card)
+{
+	if(!card)
+		return "";
+	
+	if(game.trickPointsPerCard[card] == undefined)
+		return "";
+	
+	return "+"+game.trickPointsPerCard[card];
+}
+
 function getPlayerNameOfTrickCard(trickIndex)
 {
 	if(game == null || game.trickCardPlayers.length <= trickIndex)
@@ -203,6 +220,26 @@ function isHost()
 	return game.userId == game.hostUserId;
 }
 
+function getDeclarationString(d)
+{
+	return DeclarationStrings[d];
+}
+
+var DeclarationStrings = 
+{
+	"ZOLA":"Zola",
+	"ZOLA_SCHNEIDER":"Zola Schneider",
+	"ZOLA_SCHNEIDER_SCHWARTZ":"Zola Schneider Schwartz",
+	"SNEAKER":"Sneaker",
+	"NONE":"No declaration",
+	"CALL_FOR_ACE_CLUB":"Call for ace of clubs",
+	"CALL_FOR_ACE_SPADE":"Call for ace of spades",
+	"CALL_FOR_ACE_HEART":"Call for ace of hearts",
+	"CALL_FOR_ACE_CLUB_RENOUNCED":"Call for ace of clubs, renounced",
+	"CALL_FOR_ACE_SPADE_RENOUNCED":"Call for ace of spades, renounced",
+	"CALL_FOR_ACE_HEART_RENOUNCED":"Call for ace of hearts, renounced",
+	"CALL_FOR_FIRST_TRICK_WINNER":"Call for the winner of the first trick"
+};
 
 var Stages = 
 {
@@ -213,4 +250,4 @@ var Stages =
 	"POST_TRICK":"POST_TRICK",
 	"POST_ROUND":"POST_ROUND",
 	"POST_GAME":"POST_GAME"
-}
+};

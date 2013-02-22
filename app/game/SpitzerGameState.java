@@ -86,6 +86,8 @@ public class SpitzerGameState
 			copied.trickCardsHistory = Lists.newArrayList(state.trickCardsHistory);
 		if(state.trickWinningCardHistory != null)
 			copied.trickWinningCardHistory = Lists.newArrayList(state.trickWinningCardHistory);
+		if(state.trickPointsPerCard != null)
+			copied.trickPointsPerCard = Maps.newHashMap(state.trickPointsPerCard);
 		if(state.trickPointHistory != null)
 			copied.trickPointHistory = Lists.newArrayList(state.trickPointHistory);
 		if(state.trickWinnerHistory != null)
@@ -319,6 +321,7 @@ public class SpitzerGameState
 		trickCards.put(card, player.userId);
 		trickCardsOrdered.add(card);
 		trickCardPlayers.add(player.userId);
+		trickPointsPerCard = SpitzerDeck.getPointsPerCards(trickCardsOrdered);
 		
 		// Have all the players played a card?
 		if(trickCards.size() >= players.size())
@@ -341,6 +344,12 @@ public class SpitzerGameState
 			if(bot != null)
 			{
 				return this.playCard((SpitzerPlayer)bot, bot.playCard(this));
+			}
+			else
+			{
+				// Set the valid cards for the player, in case client side bot is running
+				SpitzerPlayer curPlayer = this.getPlayerByUser(this.currentPlayer);
+				curPlayer.validCards = SpitzerDeck.getValidCardsForTrick(this.publicDeclaration, this.declarePlayer, this.currentPlayer, curPlayer.hand, this.trickCardsOrdered);
 			}
 		}
 		

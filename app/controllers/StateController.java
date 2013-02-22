@@ -35,6 +35,7 @@ public class StateController extends Controller
     	if(error != null)
     		return badRequest(error);
     	
+    	game.increasePlayerCount();
     	game.update();
     	
     	return ok(game.toJson(user));

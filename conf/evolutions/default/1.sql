@@ -9,6 +9,7 @@ create table games (
   state                     integer,
   game_state_string         LONGTEXT,
   name                      varchar(255),
+  player_count              integer,
   constraint pk_games primary key (id))
 ;
 

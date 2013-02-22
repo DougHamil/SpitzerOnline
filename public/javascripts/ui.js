@@ -24,7 +24,8 @@ var ui = {
 			this.gamePointChartEl = $("#gamePointChart");
 			this.playersEl = $("#players");
 			this.handEl = $("#hand");
-			this.trickEl = $("#trick");			
+			this.trickEl = $("#trick");
+			initBotEditor();
 			
 			$(window).resize(function(){
 				if(game != null)
@@ -93,11 +94,20 @@ var ui = {
 				}
 				break;
 			case "TRICK":
-				if(isCurrentPlayer())
+				if(isCurrentPlayer() && bot.playCard == undefined)
 				{
 					setStatusMessage("Please play a card.");
 				}
-				else
+				else if(isCurrentPlayer() && bot.playCard != undefined)
+				{
+					// let the bot play
+					requestPlayCard(bot.playCard(getValidCards(), getPublicDeclaration(), getBotTrickCards()), onGetGameState, function(data){
+						onFailed(data);
+						console.log("Your bot failed to play a valid card!");
+						setStatusMessage("Bot failed, please play a card.");
+					});
+				}
+				else if(!isCurrentPlayer())
 				{
 					setStatusMessage("Waiting for "+getCurrentPlayerName()+" to play a card.");
 				}
@@ -111,12 +121,18 @@ var ui = {
 			$("#trick .card").each(function(i, c){
 				$(c).find(".cardImage").attr("src", getCardUrl(newTrick[i]));
 				$(c).find(".cardPlayer").text(getPlayerNameOfTrickCard(i));
-				
+				$(c).find(".cardPoints").text(getTrickPointsForCard(newTrick[i]));
 				// Disable any trick cards that have been dropped
 				if(newTrick[i])
+				{
 					$(c).droppable({disabled:true});
+					$(c).find(".cardPoints").show();
+				}
 				else
+				{
 					$(c).droppable({disabled:false});
+					$(c).find(".cardPoints").hide();
+				}
 			});
 		},
 		
@@ -184,9 +200,15 @@ var ui = {
 				this.updatePlayerScores();				
 				this.showGamePointChart();
 				if(isPlayerWinner())
+				{
 					setStatusMessage("You won the game!");
+					this.showWinnerMessage();
+				}
 				else
+				{
 					setStatusMessage("You lost the game");
+					this.showLoserMessage();
+				}
 				break;
 				
 			}
@@ -290,8 +312,10 @@ var ui = {
 			{
 				var card = $('<div class="card">');
 				card.append($('<div class="cardPlayer">'));
+				card.append($('<div class="cardPoints">'));
 				card.append($('<img class="cardImage">'));
 				$("#trick").append(card);
+				
 			}
 			
 			var trick = getTrickCards();
@@ -300,6 +324,7 @@ var ui = {
 				
 				// Get the "no card" image
 				$(c).find(".cardImage").attr("src", getCardUrl(null));
+				$(c).find(".cardPoints").hide();
 				
 				// Make all trick cards droppable
 				$(c).droppable({
@@ -339,7 +364,7 @@ var ui = {
 			this.declarationMenuEl.html("");
 			var form = $('<form id="declarationForm">');
 			$.each(declarations, function(i, d){
-				form.append($('<input type="radio" value="'+d+'" name="declaration">'+d+'</input>'));
+				form.append($('<input type="radio" value="'+d+'" name="declaration">'+getDeclarationString(d)+'</input>'));
 				form.append($('<br/>'));
 			});
 			form.append($('<input id="declareButton" type="button" value="Declare">').click(function(){
@@ -411,6 +436,19 @@ var ui = {
 			
 			this.playerTooltipEl.show();
 			this.playerTooltipEl.offset(pos);
+		},
+		showWinnerMessage:function()
+		{
+			var msg = $('<div class="winnerMessage">');
+			msg.text("You won the game!");
+			$("body").append(msg);
+			
+		},
+		showLoserMessage:function()
+		{
+			var msg = $('<div class="loserMessage">');
+			msg.text("You lost");
+			$("body").append(msg);
 		}
 }
 

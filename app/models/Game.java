@@ -41,6 +41,8 @@ public class Game extends Model {
 	@Transient
 	public Integer userId;
 	
+	public Integer playerCount = 0;
+	
 	public boolean containsPlayer(User user)
 	{
 		for(User player : players)
@@ -66,16 +68,14 @@ public class Game extends Model {
 	
 	public boolean onPlayerJoin(User player)
 	{	
-		if(players.size() >= NUM_PLAYERS)
+		if(this.playerCount >= NUM_PLAYERS)
 			return false;
 		
 		if(players.contains(player))
 			return false;
 		
 		players.add(player);
-		
-		if(players.size() == NUM_PLAYERS)
-			this.state = GameMode.FULL.getId();
+		this.increasePlayerCount();
 		
 		return true;
 	}
@@ -101,6 +101,14 @@ public class Game extends Model {
 		this.gameState = Json.fromJson(Json.parse(this.gameStateString), SpitzerGameState.class);
 	}
 	
+	public void increasePlayerCount()
+	{
+		this.playerCount++;
+		
+		if(this.playerCount == NUM_PLAYERS)
+			this.state = GameMode.FULL.getId();
+	}
+	
 	public SpitzerGameState getGameState()
 	{
 		if(gameState == null)
@@ -115,7 +123,7 @@ public class Game extends Model {
 	
 	public Integer getNumberOfPlayers()
 	{
-		return players.size();
+		return this.playerCount;
 	}
 	
 	public GameMode getState()
