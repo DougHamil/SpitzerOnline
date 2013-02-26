@@ -26,4 +26,9 @@ public class HomeController extends Controller
 		
 		return ok(index.render(openGames, activeGames));
 	}
+	
+	public static Result test()
+	{
+		return ok(test.render());
+	}
 }

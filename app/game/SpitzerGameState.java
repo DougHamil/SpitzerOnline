@@ -150,7 +150,6 @@ public class SpitzerGameState
 				this.currentPlayer = getNextPlayer(this.currentDealer).userId;
 			else
 				this.currentPlayer = this.trickWinnerHistory.get(trickWinnerHistory.size() - 1);
-			
 			break;
 		case POST_TRICK:
 			this.completeTrick();
@@ -200,6 +199,9 @@ public class SpitzerGameState
 				break;
 			}
 		}
+		
+		SpitzerPlayer curPlayer = this.getPlayerByUser(this.currentPlayer);
+		curPlayer.validCards = SpitzerDeck.getValidCardsForTrick(this.publicDeclaration, this.declarePlayer, this.currentPlayer, curPlayer.hand, this.trickCardsOrdered);
 	}
 	
 	private SpitzerBot getCurrentPlayerAsBot()

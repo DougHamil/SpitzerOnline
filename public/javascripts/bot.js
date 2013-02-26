@@ -1,28 +1,21 @@
-var bot = {
-		/*
-		playCard:function(validCards)
-		{
-			return validCards.shift();
-		}
-		*/
+function saveBot()
+{
+	var text = ui.aiEditorCodeMirror.getValue();
+	
+	eval("bot = "+text);
 }
 
-var botCodeMirror;
-function initBotEditor()
+var bot = {
+		playCard:function(validCards)
+		{
+			console.log(validCards);
+			return validCards.shift();
+		}
+}
+
+function botHasPlayCard()
 {
-	return;
-	botCodeMirror = CodeMirror.fromTextArea($("#botEditorTab").get(0), 
-			{
-				value:"Test this is a test",
-				mode:"javascript",
-				lineNumbers:true,
-				height:"700px",
-				width:"500px"
-			});
-	//codeMirror.refresh();
-	
-	//$("#botEditorTab").show();
-	
+	return bot && bot.playCard;
 }
 
 function getBotTrickCards()

@@ -8,8 +8,8 @@
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/cards.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/eventManager.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/bot.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/codemirror.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/javascript.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/codemirror/codemirror.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/codemirror/javascript.js")"></script>
 	
 	
 	<script type="text/javascript">
@@ -28,6 +28,16 @@
 	</script>
 	<input type="button" value="Add First Card Bot" onclick="requestAddBot('FirstCard', onGetGameState, onFailed);">
 	<div id="playerTooltip"></div>
+	<div class='panel'>
+		<textarea id="aiEditor">
+		</textarea>
+		<input type="button" value="Save" onclick="saveBot();"/>
+		<div class='trigger'>
+			B<br/>O</br/>T<br/>
+		</div>
+	</div>
+
+	
 	<div id="container">
 	<h1>@game.name</h1>
 

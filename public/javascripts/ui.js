@@ -11,6 +11,8 @@ var ui = {
 		playersEl:$("#players"),
 		handEl:$("#hand"),
 		trickEl:$("#trick"),
+		aiEditorEl:null,
+		aiEditorCodeMirror:null,
 		// Variables
 		checkInTimer:null,
 		
@@ -25,7 +27,9 @@ var ui = {
 			this.playersEl = $("#players");
 			this.handEl = $("#hand");
 			this.trickEl = $("#trick");
-			initBotEditor();
+			this.aiEditorEl = $("aiEditorTextArea");
+			
+			this.initAIEditor();
 			
 			$(window).resize(function(){
 				if(game != null)
@@ -94,11 +98,11 @@ var ui = {
 				}
 				break;
 			case "TRICK":
-				if(isCurrentPlayer() && bot.playCard == undefined)
+				if(isCurrentPlayer() && !botHasPlayCard())
 				{
 					setStatusMessage("Please play a card.");
 				}
-				else if(isCurrentPlayer() && bot.playCard != undefined)
+				else if(isCurrentPlayer() && botHasPlayCard())
 				{
 					// let the bot play
 					requestPlayCard(bot.playCard(getValidCards(), getPublicDeclaration(), getBotTrickCards()), onGetGameState, function(data){
@@ -449,6 +453,39 @@ var ui = {
 			var msg = $('<div class="loserMessage">');
 			msg.text("You lost");
 			$("body").append(msg);
+		},
+		initAIEditor:function(){
+			this.aiEditorEl = $("#aiEditor");
+			this.aiEditorCodeMirror = CodeMirror.fromTextArea(this.aiEditorEl.get(0),
+					{
+						theme:'eclipse',
+						mode:'javascript',
+						lineNumbers:true,
+					}
+			);
+			this.aiEditorCodeMirror.setValue("{\n\tplayCard:function(validCards)\n\t{\n\t\treturn validCards.shift();\n\t}\n}");
+			var panelEl = $('.panel');
+			var triggerEl = $('.trigger');
+			//Bind a click handler to the trigger
+			triggerEl.bind('click' , function() {
+				//If the panel isn't out
+				if(!panelEl.hasClass('out')){
+					//Animate it to left 0px
+					panelEl.animate({
+						'left' : '0px'
+					});
+					//Add the out class
+					panelEl.addClass('out');
+				}
+				else {
+					//Otherwise, animate it back in
+					panelEl.animate({
+						'left' : '-580px'
+					});
+					//Remove the out class
+					panelEl.removeClass('out');
+				}
+			});		
 		}
 }
 

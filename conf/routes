@@ -4,6 +4,9 @@
 
 # Home page - show login screen/list of games
 GET     /spitzer/                    			controllers.HomeController.index()
+GET 	/spitzer								controllers.HomeController.index()
+GET		/										controllers.HomeController.index()
+GET		/test									controllers.HomeController.test()
 
 
 #########################
