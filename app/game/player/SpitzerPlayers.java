@@ -28,7 +28,7 @@ public class SpitzerPlayers extends ArrayList<SpitzerPlayer>
 	{
 		@Override
 		public boolean apply(@Nullable SpitzerPlayer arg0) {
-			return arg0.gamePoints != null && arg0.gamePoints >= 42;
+			return arg0.gamePoints != null && arg0.gamePoints >= 21;
 		}
 		
 	};

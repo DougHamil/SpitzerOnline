@@ -368,7 +368,13 @@ var ui = {
 			this.declarationMenuEl.html("");
 			var form = $('<form id="declarationForm">');
 			$.each(declarations, function(i, d){
-				form.append($('<input type="radio" value="'+d+'" name="declaration">'+getDeclarationString(d)+'</input>'));
+				var decEl = $('<input type="radio" value="'+d+'" name="declaration"/>');
+				decEl.attr("id", d);
+				form.append(decEl);
+				var labelEl = $('<label>');
+				labelEl.attr('for', d);
+				labelEl.text(getDeclarationString(d));
+				form.append(labelEl);
 				form.append($('<br/>'));
 			});
 			form.append($('<input id="declareButton" type="button" value="Declare">').click(function(){

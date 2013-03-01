@@ -6,11 +6,13 @@ function saveBot()
 }
 
 var bot = {
+		/*
 		playCard:function(validCards)
 		{
 			console.log(validCards);
 			return validCards.shift();
 		}
+		*/
 }
 
 function botHasPlayCard()
