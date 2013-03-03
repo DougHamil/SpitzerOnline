@@ -1,7 +1,6 @@
 package models;
 
 import game.SpitzerGameState;
-import java.util.List;
 import javax.persistence.*;
 
 import org.codehaus.jackson.JsonNode;
@@ -9,8 +8,6 @@ import org.codehaus.jackson.JsonNode;
 import play.data.validation.Constraints.Required;
 import play.db.ebean.Model;
 import play.libs.Json;
-import play.mvc.Controller;
-
 import java.util.Set;
 @Entity
 @Table(name = "games")

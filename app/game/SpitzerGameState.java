@@ -171,13 +171,25 @@ public class SpitzerGameState
 			this.currentPlayer = this.currentDealer;
 			break;
 		case POST_GAME:
+			this.resetCheckins();
 			// Someone won the game
 			this.gameWinners = Sets.newHashSet(players.getGameWinningPlayers().getPlayerIds());
 			break;
 		}
 		
 		this.stage = newStage;
-		this.resetCheckins();		
+		
+		switch(this.stage)
+		{
+		case POST_TRICK:
+		case POST_GAME:
+		case POST_ROUND:
+		case DECLARATION:
+		case WAITING_FOR_DEAL:
+			this.resetCheckins();
+			break;
+		}
+		
 		SpitzerBot bot = this.getCurrentPlayerAsBot();
 		
 		// Handle any bot actions here
@@ -276,9 +288,12 @@ public class SpitzerGameState
 	{
 		this.playerCheckins = Sets.newHashSet();
 		// Add all bot checkins automatically
-		for(Integer botId : this.bots)
+		if(this.bots != null)
 		{
-			this.handleCheckin(this.getPlayerByUser(botId));
+			for(Integer botId : this.bots)
+			{
+				this.handleCheckin(this.getPlayerByUser(botId));
+			}
 		}
 	}
 	
@@ -294,7 +309,6 @@ public class SpitzerGameState
 		this.trickCardsHistory.add(trickCardsOrdered);
 		this.trickCardPlayersHistory.add(trickCardPlayers);
 		this.trickWinningCardHistory.add(highestCard);
-		this.playerCheckins = Sets.newHashSet();
 		this.currentPlayer = winner;
 	}
 	
@@ -387,8 +401,6 @@ public class SpitzerGameState
 					this.moveToStage(GameStage.WAITING_FOR_DEAL);
 				break;
 			}
-			
-			this.playerCheckins.clear();
 		}
 		
 		return null;
@@ -655,6 +667,7 @@ public class SpitzerGameState
 	// Called when all tricks have been played for a dealing, set up a new dealing
 	public void newRound()
 	{
+		
 		this.trickNumber = 0;
 		
 		// ZOLA SCHNEIDER SCHWARTZ runs through all games
@@ -696,8 +709,8 @@ public class SpitzerGameState
 		this.players = new SpitzerPlayers();
 		this.stage = GameStage.WAITING_FOR_PLAYERS;
 		this.maxPlayers = Game.NUM_PLAYERS;
+		this.resetCheckins();
 
-		this.playerCheckins = Sets.newHashSet();
 		this.bots = Sets.newHashSet();
 		newRound();
 		

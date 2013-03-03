@@ -17,7 +17,7 @@ var eventManager = {
 			
 			// Check for trick cards change
 			if(this.oldState == null || this.oldState.trickCardsOrdered.length != state.trickCardsOrdered.length)
-				$(this).trigger('trickChange', [this.oldState ? this.oldState.trickCardsOrdered.length : null, state.trickCardsOrdered]);
+				$(this).trigger('trickChange', [this.oldState ? this.oldState.trickCardsOrdered : null, state.trickCardsOrdered]);
 			
 			// Check for player hand change
 			if(this.oldPlayerHand == null || this.oldPlayerHand.length != getPlayerHand().length)
@@ -25,7 +25,7 @@ var eventManager = {
 			
 			// Check for active player change
 			if(this.oldState == null || this.oldState.currentPlayer != state.currentPlayer || this.oldState.stage != state.stage)
-				$(this).trigger('currentPlayerChange', [this.oldState ? this.oldState.currentPlayer : null, state.currentPlayer, state.stage]);
+				$(this).trigger('currentPlayerChange', [this.oldState ? this.oldState.currentPlayer : null, state.currentPlayer, state.stage, this.oldState ? this.oldState.stage : null]);
 			
 			// Check for checkIn change
 			if(this.oldState == null || this.oldState.playerCheckins.length != state.playerCheckins.length)

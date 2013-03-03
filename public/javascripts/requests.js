@@ -1,3 +1,29 @@
+function requestGetBots(suc, fail)
+{
+	$.ajax({
+		url:routes.requestGetBots,
+		type:'GET',
+		dataType:'json',
+		success:suc,
+		error:fail
+	});
+}
+
+function requestSaveBot(bot, suc, fail)
+{
+	console.log("Saving bot: ");
+	console.log(bot);
+	$.ajax({
+		url:routes.requestSaveBot,
+		type:'POST',
+		contentType:'application/json; charset=utf-8',		
+		data:JSON.stringify(bot),
+		dataType:'json',
+		success:suc,
+		error:fail
+	});
+}
+
 function requestCheckIn(suc, fail)
 {
 	$.ajax({
@@ -30,6 +56,10 @@ function requestLogout()
 
 function requestPlayCard(card, suc, fail)
 {
+	// Handle either the Card object, or card enum
+	if(card.enum)
+		card = card.enum;
+	
 	var data = {card:card};
 	$.ajax({
 		url:routes.requestPlayCard,
@@ -42,9 +72,8 @@ function requestPlayCard(card, suc, fail)
 	});
 }
 
-function requestDeclaration(suc, fail)
+function requestDeclaration(declaration, suc, fail)
 {
-	var declaration = $("#declarationForm input[name=declaration]:checked").val();
 	var data = {declaration:declaration};
 	$.ajax({
 		url:routes.requestDeclaration,

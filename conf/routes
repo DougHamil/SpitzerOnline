@@ -59,10 +59,16 @@ POST	/spizter/users/create					controllers.UserController.create()
 POST	/spitzer/users/login					controllers.UserController.login()
 
 #User wants to logout
-GET	/spitzer/users/logout					controllers.UserController.logout()
+GET		/spitzer/users/logout					controllers.UserController.logout()
 
 #Check user login
 GET		/spitzer/users/check					controllers.UserController.check()
+
+#User wants to save bot
+POST	/spitzer/users/bot						controllers.UserController.saveBot()
+
+#User wants to get bots
+GET		/spitzer/users/bot						controllers.UserController.getBots()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

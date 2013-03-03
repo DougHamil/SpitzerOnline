@@ -11,8 +11,7 @@ var ui = {
 		playersEl:$("#players"),
 		handEl:$("#hand"),
 		trickEl:$("#trick"),
-		aiEditorEl:null,
-		aiEditorCodeMirror:null,
+
 		// Variables
 		checkInTimer:null,
 		
@@ -27,9 +26,6 @@ var ui = {
 			this.playersEl = $("#players");
 			this.handEl = $("#hand");
 			this.trickEl = $("#trick");
-			this.aiEditorEl = $("aiEditorTextArea");
-			
-			this.initAIEditor();
 			
 			$(window).resize(function(){
 				if(game != null)
@@ -101,15 +97,6 @@ var ui = {
 				if(isCurrentPlayer() && !botHasPlayCard())
 				{
 					setStatusMessage("Please play a card.");
-				}
-				else if(isCurrentPlayer() && botHasPlayCard())
-				{
-					// let the bot play
-					requestPlayCard(bot.playCard(getValidCards(), getPublicDeclaration(), getBotTrickCards()), onGetGameState, function(data){
-						onFailed(data);
-						console.log("Your bot failed to play a valid card!");
-						setStatusMessage("Bot failed, please play a card.");
-					});
 				}
 				else if(!isCurrentPlayer())
 				{
@@ -378,7 +365,8 @@ var ui = {
 				form.append($('<br/>'));
 			});
 			form.append($('<input id="declareButton" type="button" value="Declare">').click(function(){
-				requestDeclaration(onGetGameState, onFailed);
+				var declaration = $("#declarationForm input[name=declaration]:checked").val();
+				requestDeclaration(declaration, onGetGameState, onFailed);
 				ui.declarationMenuEl.hide();
 			}));
 			this.declarationMenuEl.append(form);
@@ -459,39 +447,6 @@ var ui = {
 			var msg = $('<div class="loserMessage">');
 			msg.text("You lost");
 			$("body").append(msg);
-		},
-		initAIEditor:function(){
-			this.aiEditorEl = $("#aiEditor");
-			this.aiEditorCodeMirror = CodeMirror.fromTextArea(this.aiEditorEl.get(0),
-					{
-						theme:'eclipse',
-						mode:'javascript',
-						lineNumbers:true,
-					}
-			);
-			this.aiEditorCodeMirror.setValue("{\n\tplayCard:function(validCards)\n\t{\n\t\treturn validCards.shift();\n\t}\n}");
-			var panelEl = $('.panel');
-			var triggerEl = $('.trigger');
-			//Bind a click handler to the trigger
-			triggerEl.bind('click' , function() {
-				//If the panel isn't out
-				if(!panelEl.hasClass('out')){
-					//Animate it to left 0px
-					panelEl.animate({
-						'left' : '0px'
-					});
-					//Add the out class
-					panelEl.addClass('out');
-				}
-				else {
-					//Otherwise, animate it back in
-					panelEl.animate({
-						'left' : '-580px'
-					});
-					//Remove the out class
-					panelEl.removeClass('out');
-				}
-			});		
 		}
 }
 

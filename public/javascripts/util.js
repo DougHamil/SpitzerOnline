@@ -90,6 +90,17 @@ function getCurrentPlayerName()
 	return getCurrentPlayer().name;
 }
 
+function playerWonLastTrick()
+{
+	return game.trickWinnerHistory[game.trickWinnerHistory.length - 1] == game.userId;
+}
+
+function playerWonLastRound()
+{
+	var history = getPlayerData(game.userId).gamePointHistory;
+	return history[history.length - 1] != 0;
+}
+
 function getCurrentPlayerId()
 {
 	return game.currentPlayer;
@@ -98,6 +109,11 @@ function getCurrentPlayerId()
 function getPlayerDiv(playerId)
 {
 	return $('.player[playerid='+playerId+']');
+}
+
+function getLastCheckedInPlayer()
+{
+	return game.playerCheckins[game.playerCheckins.length - 1];
 }
 
 function getPublicDeclarationString()
@@ -114,6 +130,28 @@ function getDealerName()
 {
 	var dealerId = game.currentDealer;
 	return getPlayerByUserId(dealerId).name;
+}
+
+function getPlayerData(userId)
+{
+	for(var p in game.players)
+	{
+		var player = game.players[p];
+		if(player.userId == userId)
+			return player;
+	}
+	return null;
+}
+
+function getLastTrickPlayer()
+{
+	return game.trickCardPlayers[game.trickCardPlayers.length - 1];
+}
+
+function getLastTrickCard()
+{
+	var trick = getTrickCards();
+	return trick[trick.length - 1];
 }
 
 function getTrickCards()

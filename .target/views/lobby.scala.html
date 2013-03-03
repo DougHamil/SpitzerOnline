@@ -10,7 +10,11 @@
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/bot.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/codemirror/codemirror.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/codemirror/javascript.js")"></script>
-	
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/botManager.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/api/Card.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/api/Hand.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/api/Player.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/api/Trick.js")"></script>
 	
 	<script type="text/javascript">
 		routes.getGameState = "@routes.GameController.state(game.id)";
@@ -19,6 +23,9 @@
 		routes.requestPlayCard = "@routes.StateController.playCard(game.id)";
 		routes.requestCheckIn = "@routes.StateController.checkIn(game.id)";
 		routes.requestAddBot = "@routes.StateController.addBot(game.id)";
+		routes.requestGetBots = "@routes.UserController.getBots()";
+		routes.requestSaveBot = "@routes.UserController.saveBot()";
+		
 		var IMAGE_EXTENSION = 'svg';
 		var CARD_IMAGE_PATH = "@routes.Assets.at("images/cards")"+"/";
 		
@@ -29,9 +36,12 @@
 	<input type="button" value="Add First Card Bot" onclick="requestAddBot('FirstCard', onGetGameState, onFailed);">
 	<div id="playerTooltip"></div>
 	<div class='panel'>
+		<select id="botSelect">
+		</select>
+		<input type="button" value="New" onclick="botManager.newBot();"/>
 		<textarea id="aiEditor">
 		</textarea>
-		<input type="button" value="Save" onclick="saveBot();"/>
+		<input type="button" value="Save" onclick="botManager.saveBot();"/>
 		<div class='trigger'>
 			B<br/>O</br/>T<br/>
 		</div>

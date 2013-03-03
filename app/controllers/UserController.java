@@ -1,11 +1,12 @@
 package controllers;
 
-import models.User;
+import org.codehaus.jackson.JsonNode;
 
-import play.*;
-import play.api.mvc.Session;
+import models.User;
+import models.UserBot;
+
 import play.data.DynamicForm;
-import play.db.ebean.Model.Finder;
+import play.libs.Json;
 import play.mvc.*;
 
 public class UserController extends Controller {
@@ -20,6 +21,65 @@ public class UserController extends Controller {
 			return ok("Session remembers you as "+user.name);
 		
 		return ok("You are not logged in!");
+	}
+	
+	public static Result getBots()
+	{
+		User user = getCurrentUser();
+		
+		if(user == null)
+			return badRequest("You must be logged in to do this.");
+
+		JsonNode node = Json.toJson(user.bots);
+		
+		return ok(node);
+	}
+	
+	@BodyParser.Of(BodyParser.Json.class)	
+	public static Result saveBot()
+	{
+		User user = getCurrentUser();
+		
+		if(user == null)
+			return badRequest("Invalid user");
+		
+		JsonNode json = request().body().asJson();
+		if(json == null)
+			return badRequest("Expecting JSON data");
+		if(json.findValue("name") == null)
+			return badRequest("Missing parameter [name]");
+		if(json.findValue("script") == null)
+			return badRequest("Missing parameter [script]");
+		
+		Integer botId = json.findValue("id") != null ? json.findPath("id").asInt() : null;
+		String botName = json.findPath("name").getTextValue();
+		String botScript = json.findPath("script").getTextValue();
+
+		UserBot bot = null;
+		
+		// If no bot ID is found, then createa  new bot
+		if(botId == null)
+		{
+			bot = new UserBot();
+			user.bots.add(bot);
+		}
+		else
+		{
+			bot = user.getBotById(botId);
+		}
+		
+		// If bot is null, then this user doesn't own this bot!
+		if(bot == null)
+			return badRequest("User is not owner of bot identified by [id] parameter: "+botId);
+		
+		// Set bot data
+		bot.name = botName;
+		bot.script = botScript;
+		
+		bot.save();
+		user.save();
+		
+		return ok(bot.id.toString());
 	}
 	
 	public static Result create()

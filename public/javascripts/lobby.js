@@ -11,6 +11,7 @@ function beginPoll(gid)
 	gameId = gid;
 	
 	ui.init();
+	botManager.init();
 	
 	poll();
 }
