@@ -133,7 +133,7 @@ public class SpitzerDeck extends Deck {
 		// If you have the ace that was called and you lead, you may play any card in that suit
 		if(declareSuit != null && orderedTrick.isEmpty() && playerHand.hasCard(Rank.ACE, declareSuit))
 		{
-			return playerHand.getFailCardsOfSuit(declareSuit);
+			return playerHand;
 		}
 		
 		// If you declared and it is the first card in the trick you can play anything
@@ -146,6 +146,7 @@ public class SpitzerDeck extends Deck {
 		
 		// Get lead card
 		Card firstCard = orderedTrick.get(0);
+
 		
 		// If you have the called ace, you do not lead, and the lead suit is the called suit, then you must play the ace
 		if(declareSuit != null && !orderedTrick.isEmpty() 

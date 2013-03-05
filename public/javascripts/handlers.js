@@ -13,6 +13,6 @@ function onFailed(jqXHR, textStatus, errorThrown)
 
 function onGetGameState(data){
 	game = data;
-	console.log(data);
+//	console.log(data);
 	onGameStateUpdate();
 }

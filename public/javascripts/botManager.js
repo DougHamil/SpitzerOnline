@@ -119,7 +119,8 @@ var botManager = {
 			case "TRICK":
 				// A player must have played a card
 				var trick = createTrick();
-				this.invokeBotMethod("onCardPlayed", trick.getLastCardPlayed(), trick, createPlayerHand());
+				if(bot.onCardPlayed)
+					bot.onCardPlayed(trick.getLastCardPlayed(), trick, createPlayerHand());
 				break;
 			}
 		},
@@ -145,11 +146,12 @@ var botManager = {
 			requestSaveBot(this.activeBot, function(data){
 					// Assign the active bot id
 					botManager.activeBot.id = parseInt(data);
+					eval('bot = '+botManager.activeBot.script);
 					requestGetBots($.proxy(this.updateEditor, this), onFailed);
 				},
 				function(){
 					console.log("Bot failed to save!");
-				});
+			});
 		},
 		updateEditor:function(bots){
 			var selectEl = $("#botSelect");
@@ -191,7 +193,7 @@ var botManager = {
 			return null;
 		},
 		newBot:function(){
-			var bot = {name:"New Bot", script:"{\n// Define your bot here!\n}"};
+			var bot = {name:"New Bot", script:"{\n// Define your bot here!\n\tplayCard:function(trick, valid, hand){\n\t}\n}"};
 			bot.id = -1;
 			this.bots.push(bot);
 			this.setActiveBot(-1);

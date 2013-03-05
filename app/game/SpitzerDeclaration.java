@@ -135,11 +135,12 @@ public enum SpitzerDeclaration
 			Map<Suit, SpitzerDeclaration> renouncedMap = getRenouncedDeclarationMap();
 			for(Suit suit : failSuits)
 			{
-				if(hand.hasCard(Rank.ACE, suit))
-					renouncedMap.remove(suit);
+				renouncedMap.remove(suit);
 			}
 
-			declarations.addAll(renouncedMap.values());
+			// Renounced is only valid if you can't call normally
+			if(declarations.isEmpty())
+				declarations.addAll(renouncedMap.values());
 			
 			// Check for all three aces
 			if(hand.hasCard(Card.ACE_OF_CLUBS) && hand.hasCard(Card.ACE_OF_SPADES) && hand.hasCard(Card.ACE_OF_HEARTS) && !gameState.trickWinnerHistory.isEmpty())

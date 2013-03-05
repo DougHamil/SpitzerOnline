@@ -1,6 +1,7 @@
 var ui = {
 		// Constants
 		CHECKIN_TIMEOUT:5000,
+
 		// DOM Elements
 		statusMessageEl:$("#statusMessage"),
 		declarationMenuEl:$("#declarationMenu"),
@@ -77,6 +78,25 @@ var ui = {
 			
 			// Move the tooltip
 			this.updateTooltipPosition();
+
+			if(isCurrentPlayer())
+			{
+				$("title").text("Spitzer Online - PLAYING");
+				if(window.webkitNotifications != null)
+				{
+					if(window.webkitNotifications.checkPermission()==0)
+					{
+						var popup = window.webkitNotifications.createNotification('', 'Your turn', 'It\'s your turn to play!');
+						popup.show();
+					}
+					else
+					{
+						window.webkitNotifications.requestPermission();
+					}
+				}
+			}
+			else
+				$("title").text("Spitzer Online");
 			
 			// Depending on the current stage, we may need to change the UI
 			switch(stage)
