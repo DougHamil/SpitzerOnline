@@ -231,6 +231,7 @@ var ui = {
 				this.handEl.show();
 				break;
 			case "DECLARATION":
+				this.declarationMenuEl.hide();	
 				this.updatePlayerDeclarations();
 				break;
 			case "POST_ROUND":
@@ -238,6 +239,9 @@ var ui = {
 				this.trickEl.show();
 				this.updatePlayerScores();
 				this.updatePlayerDeclarations();
+				break;
+			case "WAITING_FOR_DEAL":
+				this.dealButtonEl.hide();		
 				break;
 			}
 		},
