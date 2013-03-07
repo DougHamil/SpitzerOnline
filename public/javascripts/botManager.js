@@ -52,7 +52,7 @@ var botManager = {
 				if(bot.onTrickEnd)
 					bot.onTrickEnd(trick, hand, players);
 				break;
-			case "DEAL":
+			case "WAITING_FOR_DEAL":
 				if(isCurrentPlayer() && bot && bot.autoDeal)
 					requestDeal(onGetGameState, onFailed);
 				break;
