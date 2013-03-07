@@ -33,7 +33,7 @@ function buildHandFromCardStrings(cardStrings, player, validCards){
 	
 	for(var c in cardStrings)
 	{
-		cards.push(new Card(cardStrings[c], player, validCards.indexOf(cardStrings[c]) != -1));
+		cards.push(new Card(cardStrings[c], player, validCards == null ? false : validCards.indexOf(cardStrings[c]) != -1));
 	}
 	
 	return new Hand(cards);

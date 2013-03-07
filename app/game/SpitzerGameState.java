@@ -300,7 +300,7 @@ public class SpitzerGameState
 	// Called after a trick is over, or a round is over
 	private void completeTrick()
 	{
-		Card highestCard = SpitzerDeck.getWinningCard(trickCards.keySet());
+		Card highestCard = SpitzerDeck.getWinningCard(trickCardsOrdered.get(0), trickCards.keySet());
 		Integer winner = trickCards.get(highestCard);
 		getPlayerByUser(winner).trickPoints += SpitzerDeck.getPointsForCards(trickCards.keySet());
 		this.trickPointsPerCard = SpitzerDeck.getPointsPerCards(trickCards.keySet());

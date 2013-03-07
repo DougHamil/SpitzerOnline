@@ -30,7 +30,7 @@
 .winnerMessage {
 	display:inline;
 	text-align:center; /* center horizontally */
-    vertical-align:middle; /* center vertically */
+	vertical-align:middle; /* center vertically */
 	position:absolute;
 	top:40%;
 	left:40%;
@@ -170,7 +170,7 @@ to {-moz-transform:scale(1.5,1.5); color:#4E4}
 }
 
 #gamePointChart {
-	background-color:#AAA;
+	background-color:rgba(128, 128, 128, 0.5);
 	border-radius:5px;
 	z-index:1000;
 }

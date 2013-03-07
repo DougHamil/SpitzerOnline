@@ -37,7 +37,7 @@ public class SpitzerDeck extends Deck {
 													.put(Rank.KING, 8)
 													.put(Rank.NINE, 7)
 													.put(Rank.EIGHT, 6)
-													.put(Rank.SEVEN, 7)
+													.put(Rank.SEVEN, 5)
 													.build();
 	
 	public static final ImmutableMap<Card, Integer> TRUMP_PRIORITIES = ImmutableMap.<Card, Integer>builder()
@@ -218,28 +218,48 @@ public class SpitzerDeck extends Deck {
 		return points;
 	}
 	
-	public static Card getWinningCard(Collection<Card> cards)
+	public static Card getWinningCard(Card lead, Collection<Card> cards)
 	{
 		Card winner = null;
 		
 		for(Card card : cards)
 		{
-			winner = getWinningCard(winner, card);
+			winner = getWinningCard(lead, winner, card);
 		}
 		
 		return winner;
 	}
 	
-	public static Card getWinningCard(Card a, Card b)
+	public static Card getWinningCard(Card lead, Card a, Card b)
 	{
+		Integer aPriority = 0;
+		Integer bPriority = 0;
+
+		if(b != null && b.getRank() != null)
+			bPriority = FAIL_RANK_PRIORITIES.get(b.getRank());
+		if(a != null && a.getRank() != null)
+			aPriority = FAIL_RANK_PRIORITIES.get(a.getRank());
+
+		if(lead == null)
+			return null;
 		if(a == null)
 			return b;
 		if(b == null)
 			return a;
-		
+
 		if(isFail(a) && isFail(b))
 		{
-			if(FAIL_RANK_PRIORITIES.get(a.getRank()) > FAIL_RANK_PRIORITIES.get(b.getRank()))
+			if(isFail(lead))
+			{
+				if(b.getSuit().equals(lead.getSuit()) 
+					&& !a.getSuit().equals(lead.getSuit()))
+					return b;
+				else if(a.getSuit().equals(lead.getSuit())
+					&& !b.getSuit().equals(lead.getSuit()))
+					return a;
+			}
+
+			if(aPriority > bPriority)
 				return a;
 			else
 				return b;
