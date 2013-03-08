@@ -21,7 +21,7 @@ public class HomeController extends Controller
 			return ok(login.render());
 		
 		// If logged in, present game list
-		List<Game> openGames = GameController.getOpenGames();
+		List<Game> openGames = GameController.getOpenGames(user);
 		List<Game> activeGames = GameController.getActiveGames(user);
 		
 		return ok(index.render(openGames, activeGames));

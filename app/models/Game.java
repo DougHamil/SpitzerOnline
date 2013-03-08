@@ -127,6 +127,11 @@ public class Game extends Model {
 	{
 		return GameMode.fromId(state);
 	}
+
+	public void setState(GameMode mode)
+	{
+		this.state = mode.getId();
+	}
 	
 	public static enum GameMode
 	{

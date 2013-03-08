@@ -70,6 +70,11 @@ function getPlayer()
 	return getPlayerByUserId(game.userId);
 }
 
+function getPlayerId()
+{
+	return game.userId;
+}
+
 function getStage()
 {
 	return Stages[game.stage];

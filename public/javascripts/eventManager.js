@@ -25,7 +25,7 @@ var eventManager = {
 			
 			// Check for active player change
 			if(this.oldState == null || this.oldState.currentPlayer != state.currentPlayer || this.oldState.stage != state.stage)
-				$(this).trigger('currentPlayerChange', [this.oldState ? this.oldState.currentPlayer : null, state.currentPlayer, state.stage, this.oldState ? this.oldState.stage : null]);
+				this.checkForCurrentPlayerChange(state);
 			
 			// Check for checkIn change
 			if(this.oldState == null || this.oldState.playerCheckins.length != state.playerCheckins.length)
@@ -33,6 +33,45 @@ var eventManager = {
 			
 			this.oldPlayerHand = getPlayerHand();
 			this.oldState = state;
+		},
+		checkForCurrentPlayerChange:function(state){
+			var lastPlayer = this.oldState ? this.oldState.currentPlayer : null;
+			var oldPlayers = [];	
+
+			// If the last player is the current player, that means there was a state change
+			if(lastPlayer == state.currentPlayer)
+				oldPlayers.push(state.currentPlayer);
+
+			if(lastPlayer != null)
+			{
+				// It is possible multiple players shifted, invoke the method for each change
+				var lastPlayerIndex = this.getIndexOfPlayerId(state, lastPlayer); 
+
+				while(lastPlayer != state.currentPlayer)
+				{
+					oldPlayers.push(lastPlayer);
+					lastPlayerIndex++;
+					if(lastPlayerIndex >= state.players.length)
+						lastPlayerIndex = 0;
+					lastPlayer = state.players[lastPlayerIndex].userId;
+				}
+			} else { oldPlayers.push(lastPlayer); }
+
+			oldPlayers.push(state.currentPlayer);
+
+			// Invoke method for each player change
+			for(var p = 0; p < oldPlayers.length - 1; p++)
+			{
+				$(this).trigger('currentPlayerChange', [oldPlayers[p], oldPlayers[p+1], state.stage, this.oldState ? this.oldState.stage : null]);
+			}
+		},
+		getIndexOfPlayerId:function(state, id){
+			for(var p in state.players)
+			{
+				if(state.players[p].userId == id)
+					return p;
+			}
+			return null;
 		},
 		getHandChangeSet:function(current, target)
 		{

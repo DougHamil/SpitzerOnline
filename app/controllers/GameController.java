@@ -15,6 +15,8 @@ import play.mvc.*;
 
 import views.html.*;
 
+import static play.data.Form.form;
+
 public class GameController extends Controller {
 	
     public static Result getAll()
@@ -66,12 +68,12 @@ public class GameController extends Controller {
     	
     	if(user == null)
     		return redirect(controllers.routes.HomeController.index());
-    	
+
     	Game newGame = new Game();
     	newGame.hostUserId = user.id;
     	newGame.state = GameMode.OPEN.getId();    	
     	newGame.onPlayerJoin(user);
-    	newGame.name = user.name + "'s Game";
+		newGame.name = form().bindFromRequest().get("name"); 
     	SpitzerGameState gameState = new SpitzerGameState();
     	gameState.startGame(newGame);
     	newGame.setGameState(gameState);
@@ -79,6 +81,11 @@ public class GameController extends Controller {
     	
     	return redirect(controllers.routes.GameController.view(newGame.id));
     }
+
+	public static Result hostPage()
+	{
+		return ok(host.render());
+	}
     
     public static Game getGameById(Integer id)
     {
@@ -97,16 +104,24 @@ public class GameController extends Controller {
     	// Find all games that the player is in
     	for(Game game : allGames)
     	{
-    		if(game.containsPlayer(user))
+    		if(game.containsPlayer(user) && !game.getState().equals(GameMode.COMPLETE))
     			activeGames.add(game);
     	}
     	
     	return activeGames;
     }
     
-    public static List<Game> getOpenGames()
+    public static List<Game> getOpenGames(User user)
     {
     	// Get all open games
-    	return Game.find.where().eq("state", GameMode.OPEN.getId()).findList();
+		List<Game> allGames = Game.find.where().eq("state", GameMode.OPEN.getId()).findList();
+		List<Game> openGames = Lists.newArrayList();
+
+		for(Game game : allGames)
+		{
+			if(!game.containsPlayer(user))
+				openGames.add(game);
+		}
+		return openGames;
     }
 }

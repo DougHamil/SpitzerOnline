@@ -41,6 +41,8 @@ GET  	/spitzer/games/join						controllers.GameController.join(gameId : Int)
 #User wishes to host a new game
 POST	/spitzer/games/host						controllers.GameController.host()
 
+GET		/spitzer/games/host/setup				controllers.GameController.hostPage()
+
 # Get the game state, called by AJAX
 GET		/spitzer/games/state					controllers.GameController.state(gameId : Int)
 

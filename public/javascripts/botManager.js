@@ -74,11 +74,13 @@ var botManager = {
 		onCurrentPlayerChanged:function(event, oldCurrentPlayer, currentPlayer, stage, oldStage){
 			if(!bot)
 				return;
+
+			var isCurrentPlayer = getPlayerId() == currentPlayer;
 			
 			switch(stage)
 			{
 			case "DECLARATION":
-				if(isCurrentPlayer() && bot.declare)
+				if(isCurrentPlayer && bot.declare)
 				{
 					var hand = createHandForPlayer(currentPlayer);
 					
@@ -92,7 +94,7 @@ var botManager = {
 				break;
 			case "TRICK":
 				// Let the bot pick a card
-				if(isCurrentPlayer() && bot.playCard)
+				if(isCurrentPlayer && bot.playCard)
 				{
 					var hand = createHandForPlayer(currentPlayer);
 					var trick = createTrick();
@@ -202,7 +204,8 @@ var botManager = {
 		setActiveBot:function(botId){
 			var bot = this.getBotById(botId);
 			this.activeBot = bot;
-			this.aiEditorCodeMirror.setValue(bot.script);
+			if(bot)
+				this.aiEditorCodeMirror.setValue(bot.script);
 		},
 		initEditor:function(){
 			this.aiEditorEl = $("#aiEditor");

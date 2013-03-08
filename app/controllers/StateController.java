@@ -1,17 +1,21 @@
 package controllers;
 
-import play.mvc.Controller;
-import game.SpitzerDeclaration;
-import game.SpitzerGameState;
 import game.cards.Card;
+
 import game.player.bot.SpitzerBotType;
+
+import game.SpitzerDeclaration;
+
+import game.SpitzerGameState;
+
+import models.Game;
+
+import models.User;
 
 import org.codehaus.jackson.JsonNode;
 
-import models.Game;
-import models.User;
-
 import play.mvc.*;
+import play.mvc.Controller;
 
 public class StateController extends Controller
 {
@@ -62,6 +66,8 @@ public class StateController extends Controller
 		if(error != null)
 			return badRequest(error);
 		
+		if(game.getGameState().stage.equals(SpitzerGameState.GameStage.POST_GAME))
+			game.setState(Game.GameMode.COMPLETE);
 		game.update();
 		
 		return ok(game.toJson(user));
@@ -107,6 +113,9 @@ public class StateController extends Controller
     	JsonNode error = gameState.handleCheckin(user);
     	if(error != null)
     		return badRequest(error);
+
+		if(gameState.stage.equals(SpitzerGameState.GameStage.POST_GAME))
+			game.setState(Game.GameMode.COMPLETE);
     		
     	game.update();
     	return ok(game.toJson(user));
