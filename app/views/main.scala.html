@@ -23,6 +23,7 @@
     </head>
     <body>
     	<input id="logoutButton" type="button" value="Logout" onclick="requestLogout();">
+	<input id="notifyButton" type="button" value="Allow Notifications" onclick="window.webkitNotifications.requestPermission();">
         @content
     </body>
 </html>

@@ -73,6 +73,7 @@ public class SpitzerPlayer
 		this.hand = null;
 		this.declarations = null;
 		this.activeDeclaration = null;
+		this.validCards = null;
 	}
 	
 	public void grantGamePoints(Integer points)
