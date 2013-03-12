@@ -20,6 +20,11 @@ function botHasPlayCard()
 	return bot && bot.playCard;
 }
 
+function botHasDeclare()
+{
+	return bot && bot.declare;
+}
+
 function getBotTrickCards()
 {
 	// Return a card object with a player

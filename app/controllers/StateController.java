@@ -66,8 +66,9 @@ public class StateController extends Controller
 		if(error != null)
 			return badRequest(error);
 		
-		if(game.getGameState().stage.equals(SpitzerGameState.GameStage.POST_GAME))
-			game.setState(Game.GameMode.COMPLETE);
+		if(!game.getState().equals(Game.GameMode.COMPLETE) && game.getGameState().stage.equals(SpitzerGameState.GameStage.POST_GAME))
+			onGameComplete(game, game.getGameState());
+			
 		game.update();
 		
 		return ok(game.toJson(user));
@@ -114,13 +115,34 @@ public class StateController extends Controller
     	if(error != null)
     		return badRequest(error);
 
-		if(gameState.stage.equals(SpitzerGameState.GameStage.POST_GAME))
-			game.setState(Game.GameMode.COMPLETE);
+		if(!game.getState().equals(Game.GameMode.COMPLETE) && gameState.stage.equals(SpitzerGameState.GameStage.POST_GAME))
+			onGameComplete(game, gameState);
     		
     	game.update();
     	return ok(game.toJson(user));
     }
 	
+    public static void onGameComplete(Game game, SpitzerGameState state)
+    {
+    	for(Integer winnerId : state.gameWinners)
+    	{
+    		User winner = UserController.getUser(winnerId);
+    		if(winner == null)
+    			continue;
+    		winner.careerWins++;
+   		}
+    
+    	for(Integer loserId : state.gameLosers)
+    	{
+    		User loser = UserController.getUser(loserId);
+    		if(loser == null)
+    			continue;
+    		loser.careerLosses++;
+   		}
+    	
+		game.setState(Game.GameMode.COMPLETE);
+    }
+    
     public static Result deal(Integer gameId)
     {
     	Game game = GameController.getGameById(gameId);

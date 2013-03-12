@@ -1,6 +1,7 @@
 var ui = {
 		// Constants
 		CHECKIN_TIMEOUT:5000,
+		NOTIFICATION_TIMEOUT:6000,
 
 		// DOM Elements
 		statusMessageEl:$("#statusMessage"),
@@ -61,6 +62,21 @@ var ui = {
 			$(eventManager).on('currentPlayerChange', $.proxy(this.onCurrentPlayerChanged, this));
 			$(eventManager).on('playerCheckedIn', $.proxy(this.onPlayersCheckIn, this));
 		},
+		showNotification:function(icon, title, description)
+		{
+			if(window.webkitNotifications != null)
+			{
+				if(window.webkitNotifications.checkPermission() == 0)
+				{
+					var popup = window.webkitNotifications.createNotification(icon, title, description);
+					popup.show();
+					
+					setTimeout(function(){
+						popup.cancel();
+					}, this.NOTIFICATION_TIMEOUT);
+				}
+			}
+		},
 		
 		// Called when the current player has changed
 		onCurrentPlayerChanged:function(event, oldPlayerId, newPlayerId, stage) {
@@ -80,21 +96,7 @@ var ui = {
 			this.updateTooltipPosition();
 
 			if(isCurrentPlayer())
-			{
 				$("title").text("Spitzer Online - PLAYING");
-				if(window.webkitNotifications != null)
-				{
-					if(window.webkitNotifications.checkPermission()==0)
-					{
-						var popup = window.webkitNotifications.createNotification('', 'Your turn', 'It\'s your turn to play!');
-						popup.show();
-					}
-					else
-					{
-						window.webkitNotifications.requestPermission();
-					}
-				}
-			}
 			else
 				$("title").text("Spitzer Online");
 			
@@ -102,8 +104,9 @@ var ui = {
 			switch(stage)
 			{
 			case "DECLARATION":
-				if(isCurrentPlayer())
+				if(isCurrentPlayer() && !botHasDeclare())
 				{
+					this.showNotification('','Declare', "It's your turn to declare!");					
 					setStatusMessage("Please choose a declaration.");
 					this.declarationMenuEl.show();
 				}
@@ -116,6 +119,7 @@ var ui = {
 			case "TRICK":
 				if(isCurrentPlayer() && !botHasPlayCard())
 				{
+					this.showNotification('','Play a card', "It's your turn to play a card!");
 					setStatusMessage("Please play a card.");
 				}
 				else if(!isCurrentPlayer())
@@ -435,7 +439,7 @@ var ui = {
 			});
 			
 			this.gamePointChartEl.show();
-			this.trickEl.hide();
+			//this.trickEl.hide();
 		},
 		requireCheckIn:function()
 		{
@@ -473,7 +477,3 @@ var ui = {
 			$("body").append(msg);
 		}
 }
-
-	
-
-

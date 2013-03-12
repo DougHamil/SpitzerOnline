@@ -26,6 +26,14 @@ public class User extends Model
 	@ManyToMany(cascade={CascadeType.ALL})
 	public Set<UserBot> bots;
 	
+	public Integer careerWins;
+	public Integer careerLosses;
+
+	public User()
+	{
+		this.careerWins = 0;
+		this.careerLosses = 0;
+	}
 	
 	public UserBot getBotById(Integer id)
 	{

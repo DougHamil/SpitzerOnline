@@ -1,9 +1,11 @@
 package game.player;
 
 import game.SpitzerDeclaration;
+import game.SpitzerGameState;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -13,9 +15,11 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class SpitzerPlayers extends ArrayList<SpitzerPlayer>
 {
+	
 	public static final Function<SpitzerPlayer, Integer> EXTRACT_USER_ID = new Function<SpitzerPlayer, Integer>()
 	{
 		@Override
@@ -28,7 +32,7 @@ public class SpitzerPlayers extends ArrayList<SpitzerPlayer>
 	{
 		@Override
 		public boolean apply(@Nullable SpitzerPlayer arg0) {
-			return arg0.gamePoints != null && arg0.gamePoints >= 21;
+			return arg0.gamePoints != null && arg0.gamePoints >= SpitzerGameState.GAME_WIN_POINTS;
 		}
 		
 	};
@@ -59,9 +63,37 @@ public class SpitzerPlayers extends ArrayList<SpitzerPlayer>
 		}
 	}
 	
+	public SpitzerPlayers getGameLosingPlayers()
+	{
+		SpitzerPlayers winners = this.getGameWinningPlayers();
+		SpitzerPlayers all = new SpitzerPlayers(this);
+		all.removeAll(winners);
+		return all;
+	}
+	
 	public SpitzerPlayers getGameWinningPlayers()
 	{
-		return new SpitzerPlayers(Collections2.filter(this, IS_GAME_WINNER));
+		SpitzerPlayers winners = new SpitzerPlayers(Collections2.filter(this, IS_GAME_WINNER));
+		
+		if(winners.isEmpty() || winners.size() == 1)
+			return winners;
+		
+		// Determine real winner(s) (could be a tie)
+		Set<SpitzerPlayer> highestWinners = Sets.newHashSet();
+		Integer highestPoints = 0;
+		for(SpitzerPlayer player : winners)
+		{
+			if(player.gamePoints > highestPoints)
+				highestWinners.clear();
+			
+			if(player.gamePoints >= highestPoints)
+			{
+				highestWinners.add(player);
+				highestPoints = player.gamePoints;
+			}
+		}
+		
+		return new SpitzerPlayers(highestWinners);
 	}
 	
 	public Collection<SpitzerDeclaration> getDeclarations(Collection<Integer> players)

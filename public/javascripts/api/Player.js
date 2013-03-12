@@ -8,6 +8,11 @@ function Player(player) {
 	this.isDealer = player.isDealer;
 }
 
+function createThisPlayer()
+{
+	return new Player(getPlayer());
+}
+
 function createAllPlayers()
 {
 	var players = [];

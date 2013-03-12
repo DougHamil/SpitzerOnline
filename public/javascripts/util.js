@@ -1,4 +1,3 @@
-
 function setStatusMessage(msg)
 {
 	ui.statusMessageEl.html(msg);

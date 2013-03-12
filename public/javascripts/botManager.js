@@ -28,17 +28,17 @@ var botManager = {
 				var hand = createHandForPlayer(getPlayer().userId);
 				var players = createAllPlayers();
 				if(playerWonLastTrick() && bot.onWonTrick)
-					bot.onWonTrick(trick, hand, players);
+					bot.onWonTrick(trick, hand, players, createThisPlayer());
 				if(!playerWonLastTrick() && bot.onLostTrick)
-					bot.onLostTrick(trick, hand, players);
+					bot.onLostTrick(trick, hand, players, createThisPlayer());
 				if(bot.onTrickEnd)
 					bot.onTrickEnd(trick, hand, players);
 				if(playerWonLastRound() && bot.onWonRound)
-					bot.onWonRound(trick, players);
+					bot.onWonRound(trick, players, createThisPlayer());
 				if(!playerWonLastRound() && bot.onLostRound)
-					bot.onLostRound(trick, players);
+					bot.onLostRound(trick, players, createThisPlayer());
 				if(bot.onRoundEnd)
-					bot.onRoundEnd(trick, players);
+					bot.onRoundEnd(trick, players, createThisPlayer());
 				
 				break;
 			case "POST_TRICK":
@@ -46,11 +46,11 @@ var botManager = {
 				var hand = createHandForPlayer(getPlayer().userId);
 				var players = createAllPlayers();
 				if(playerWonLastTrick() && bot.onWonTrick)
-					bot.onWonTrick(trick, hand, players);
+					bot.onWonTrick(trick, hand, players, createThisPlayer());
 				if(!playerWonLastTrick() && bot.onLostTrick)
-					bot.onLostTrick(trick, hand, players);
+					bot.onLostTrick(trick, hand, players, createThisPlayer());
 				if(bot.onTrickEnd)
-					bot.onTrickEnd(trick, hand, players);
+					bot.onTrickEnd(trick, hand, players, createThisPlayer());
 				break;
 			case "WAITING_FOR_DEAL":
 				if(isCurrentPlayer() && bot && bot.autoDeal)
@@ -58,7 +58,7 @@ var botManager = {
 				break;
 			case "TRICK":
 				if(oldStage == "DEAL")
-					this.invokeBotMethod("onDeal", [createPlayerHand()]);
+					this.invokeBotMethod("onDeal", [createPlayerHand(), createThisPlayer()]);
 				break;
 			}
 		},
@@ -84,7 +84,7 @@ var botManager = {
 				{
 					var hand = createHandForPlayer(currentPlayer);
 					
-					requestDeclaration(bot.declare(getPlayer().declarations, hand), onGetGameState, function(data){
+					requestDeclaration(bot.declare(getPlayer().declarations, hand, createThisPlayer()), onGetGameState, function(data){
 							onFailed(data);
 							console.log("Your bot failed to make a valid declaration");
 							setStatusMessage("Bot declaration failed, please declare.");
@@ -99,7 +99,7 @@ var botManager = {
 					var hand = createHandForPlayer(currentPlayer);
 					var trick = createTrick();
 					
-					requestPlayCard(bot.playCard(trick, hand.getValidCards(), hand), onGetGameState, function(data){
+					requestPlayCard(bot.playCard(trick, hand.getValidCards(), hand, createThisPlayer()), onGetGameState, function(data){
 						onFailed(data);
 						console.log("Your bot failed to play a valid card!");
 						setStatusMessage("Bot failed, please play a card.");

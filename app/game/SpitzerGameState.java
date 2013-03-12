@@ -31,11 +31,13 @@ import util.GameError;
 
 public class SpitzerGameState
 {
+	public static final Integer GAME_WIN_POINTS = 21;
 	public SpitzerPlayers players;
 	public Integer maxPlayers;
 	public Integer currentDealer;
 	public Integer currentPlayer;
 	public Set<Integer> gameWinners;
+	public Set<Integer> gameLosers;
 	public Set<Integer> blackTeam;
 	public Set<Integer> otherTeam;
 	public Map<Card, Integer> trickPointsPerCard;
@@ -68,6 +70,8 @@ public class SpitzerGameState
 		copied.currentPlayer = state.currentPlayer;
 		if(state.gameWinners != null)
 			copied.gameWinners = Sets.newHashSet(state.gameWinners);
+		if(state.gameLosers != null)
+			copied.gameLosers = Sets.newHashSet(state.gameLosers);
 		if(state.blackTeam != null)
 			copied.blackTeam = Sets.newHashSet(state.blackTeam);
 		if(state.otherTeam != null)
@@ -174,6 +178,7 @@ public class SpitzerGameState
 			this.resetCheckins();
 			// Someone won the game
 			this.gameWinners = Sets.newHashSet(players.getGameWinningPlayers().getPlayerIds());
+			this.gameLosers = Sets.newHashSet(players.getGameLosingPlayers().getPlayerIds());
 			break;
 		}
 		

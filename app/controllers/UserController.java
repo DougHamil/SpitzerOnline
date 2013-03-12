@@ -128,6 +128,11 @@ public class UserController extends Controller {
 		return user;
 	}
 
+	public static User getUser(Integer id)
+	{
+		return User.find.byId(id);
+	}
+	
 	public static User getCurrentUser()
 	{
 		String userIdString = session("userid");
