@@ -86,6 +86,7 @@ var botManager = {
 					
 					requestDeclaration(bot.declare(getPlayer().declarations, hand, createThisPlayer()), onGetGameState, function(data){
 							onFailed(data);
+							ui.showNotification('', 'Bot failed to declare!', 'Your bot failed to declare, please declare');
 							console.log("Your bot failed to make a valid declaration");
 							setStatusMessage("Bot declaration failed, please declare.");
 						}
@@ -101,6 +102,7 @@ var botManager = {
 					
 					requestPlayCard(bot.playCard(trick, hand.getValidCards(), hand, createThisPlayer()), onGetGameState, function(data){
 						onFailed(data);
+						ui.showNotification('', 'Your bot failed!', 'Your bot failed to play a card, please play a card');
 						console.log("Your bot failed to play a valid card!");
 						setStatusMessage("Bot failed, please play a card.");
 					});
@@ -150,9 +152,11 @@ var botManager = {
 					botManager.activeBot.id = parseInt(data);
 					eval('bot = '+botManager.activeBot.script);
 					requestGetBots($.proxy(this.updateEditor, this), onFailed);
+					ui.showNotification('', 'Bot Saved', 'Your bot was successfully saved!');
 				},
 				function(){
 					console.log("Bot failed to save!");
+					ui.showNotification('', 'Bot Failed to Save', 'Your bot could not be saved!');
 			});
 		},
 		updateEditor:function(bots){

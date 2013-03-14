@@ -59,6 +59,8 @@ function requestPlayCard(card, suc, fail)
 	if(!card)
 		fail(card);
 
+	if(card == undefined)
+		return;
 	// Handle either the Card object, or card enum
 	if(card.enum)
 		card = card.enum;

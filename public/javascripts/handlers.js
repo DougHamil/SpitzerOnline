@@ -8,6 +8,8 @@ function onDealFailed(jqXHR, textStatus, errorThrown)
 function onFailed(jqXHR, textStatus, errorThrown)
 {
 	var error = jqXHR;
+	if(!error)
+		return;
 	console.log($.parseJSON(error.responseText));
 }
 

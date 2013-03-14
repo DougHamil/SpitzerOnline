@@ -4,7 +4,7 @@
 # --- !Ups
 
 create table games (
-  id                        integer not null,
+  id                        integer auto_increment not null,
   host_user_id              integer,
   state                     integer,
   game_state_string         LONGTEXT,
@@ -14,7 +14,7 @@ create table games (
 ;
 
 create table Users (
-  id                        integer not null,
+  id                        integer auto_increment not null,
   name                      varchar(255),
   career_wins               integer,
   career_losses             integer,
@@ -23,7 +23,7 @@ create table Users (
 ;
 
 create table Bots (
-  id                        integer not null,
+  id                        integer auto_increment not null,
   name                      varchar(255),
   script                    LONGTEXT,
   constraint pk_Bots primary key (id))
@@ -41,12 +41,6 @@ create table Users_Bots (
   Bots_id                        integer not null,
   constraint pk_Users_Bots primary key (Users_id, Bots_id))
 ;
-create sequence games_seq;
-
-create sequence Users_seq;
-
-create sequence Bots_seq;
-
 
 
 
@@ -60,23 +54,17 @@ alter table Users_Bots add constraint fk_Users_Bots_Bots_02 foreign key (Bots_id
 
 # --- !Downs
 
-SET REFERENTIAL_INTEGRITY FALSE;
+SET FOREIGN_KEY_CHECKS=0;
 
-drop table if exists games;
+drop table games;
 
-drop table if exists games_Users;
+drop table games_Users;
 
-drop table if exists Users;
+drop table Users;
 
-drop table if exists Users_Bots;
+drop table Users_Bots;
 
-drop table if exists Bots;
+drop table Bots;
 
-SET REFERENTIAL_INTEGRITY TRUE;
-
-drop sequence if exists games_seq;
-
-drop sequence if exists Users_seq;
-
-drop sequence if exists Bots_seq;
+SET FOREIGN_KEY_CHECKS=1;
 

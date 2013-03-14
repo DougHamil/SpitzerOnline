@@ -70,6 +70,7 @@ var ui = {
 				{
 					var popup = window.webkitNotifications.createNotification(icon, title, description);
 					popup.show();
+					popup.click = function(x){window.focus(); this.cancel();};
 					
 					setTimeout(function(){
 						popup.cancel();
