@@ -32,7 +32,7 @@ var botManager = {
 				if(!playerWonLastTrick() && bot.onLostTrick)
 					bot.onLostTrick(trick, hand, players, createThisPlayer());
 				if(bot.onTrickEnd)
-					bot.onTrickEnd(trick, hand, players);
+					bot.onTrickEnd(trick, hand, players, createThisPlayer());
 				if(playerWonLastRound() && bot.onWonRound)
 					bot.onWonRound(trick, players, createThisPlayer());
 				if(!playerWonLastRound() && bot.onLostRound)

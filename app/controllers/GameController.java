@@ -46,7 +46,7 @@ public class GameController extends Controller {
     		redirect(controllers.routes.GameController.view(gameId));
     	
     	if(user == null || game == null || !game.onPlayerJoin(user))
-    		redirect(controllers.routes.HomeController.index());
+    		redirect(controllers.routes.GameController.view(gameId));
     	
     	// Add player to game state
     	game.getGameState().addPlayer(user);

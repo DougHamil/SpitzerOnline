@@ -211,8 +211,8 @@ to {-moz-transform:scale(1.5,1.5); color:#4E4}
 }
 
 .player.active .playerName{
-	-webkit-animation: spinz 5s ease-in-out 0 infinite alternate;
-	-moz-animation: spinz 5s ease-in-out 0 infinite alternate;
+/*	-webkit-animation: spinz 5s ease-in-out 0 infinite alternate; 
+	-moz-animation: spinz 5s ease-in-out 0 infinite alternate; */
 }
 
 .player.active {
