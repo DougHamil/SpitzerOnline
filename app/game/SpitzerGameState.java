@@ -351,7 +351,7 @@ public class SpitzerGameState
 			{
 				this.moveToStage(GameStage.POST_ROUND);
 				// If there was a winner, go to post game
-				if(!players.getGameWinningPlayers().isEmpty())
+				if(players.getGameWinningPlayers().size() == 1)
 					this.moveToStage(GameStage.POST_GAME);
 			}
 			else
