@@ -94,10 +94,25 @@ var botManager = {
 				}
 				break;
 			case "TRICK":
+				if (!isCurrentPlayer) break;
+
+				var hand = createHandForPlayer(currentPlayer);
+				var staged = ui.staged;
+				delete ui.staged;
+				$(staged).removeClass('staged');
+				if (staged) {
+					if (hand.getValidCards().map(function(c){return c.enum}).indexOf($(staged).attr('card')) > -1) {
+						requestPlayCard($(staged).attr('card'), onGetGameState, onFailed);
+						break;
+					}
+					else if (!bot.playCard) {
+						ui.showNotification('','Staged card failed', "It's your turn to play a card!");
+						setStatusMessage("Please play a card.");
+					}
+				}
 				// Let the bot pick a card
-				if(isCurrentPlayer && bot.playCard)
+				if(bot.playCard)
 				{
-					var hand = createHandForPlayer(currentPlayer);
 					var trick = createTrick();
 					
 					requestPlayCard(bot.playCard(trick, hand.getValidCards(), hand, createThisPlayer()), onGetGameState, function(data){
