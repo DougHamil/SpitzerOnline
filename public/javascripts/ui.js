@@ -316,10 +316,7 @@ var ui = {
 				newCard.html(getCardHtml(c));
 				
 				// Double clicking a card attempts to play it
-				newCard.dblclick(function(e){
-					requestPlayCard($(this).attr('card'), onGetGameState, onFailed);
-				});
-
+				newCard.dblclick(onCardStaged);
 			});
 			
 			// Update the size of the hand box
