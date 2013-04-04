@@ -18,3 +18,21 @@ function onGetGameState(data){
 //	console.log(data);
 	onGameStateUpdate();
 }
+
+function onCardStaged(ev) {
+  var image = ev.target;
+  if (isCurrentPlayer()) {
+    requestPlayCard($(image).attr('card'), onGetGameState, onFailed);
+  }
+  else {
+    if (ui.staged) {
+      $(ui.staged).removeClass('staged');
+      if ($(ui.staged).attr('card') == $(image).attr('card')) {
+        delete ui.staged;
+        return;
+      }
+    }
+    $(image).addClass('staged');
+    ui.staged = image;
+  }
+}

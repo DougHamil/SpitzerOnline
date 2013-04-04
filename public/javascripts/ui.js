@@ -118,7 +118,7 @@ var ui = {
 				}
 				break;
 			case "TRICK":
-				if(isCurrentPlayer() && !botHasPlayCard())
+				if(isCurrentPlayer() && !botHasPlayCard() && !ui.staged)
 				{
 					this.showNotification('','Play a card', "It's your turn to play a card!");
 					setStatusMessage("Please play a card.");
@@ -316,10 +316,7 @@ var ui = {
 				newCard.html(getCardHtml(c));
 				
 				// Double clicking a card attempts to play it
-				newCard.dblclick(function(e){
-					requestPlayCard($(this).attr('card'), onGetGameState, onFailed);
-				});
-
+				newCard.dblclick(onCardStaged);
 			});
 			
 			// Update the size of the hand box
