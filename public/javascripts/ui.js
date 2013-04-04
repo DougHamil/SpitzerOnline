@@ -118,7 +118,7 @@ var ui = {
 				}
 				break;
 			case "TRICK":
-				if(isCurrentPlayer() && !botHasPlayCard())
+				if(isCurrentPlayer() && !botHasPlayCard() && !ui.staged)
 				{
 					this.showNotification('','Play a card', "It's your turn to play a card!");
 					setStatusMessage("Please play a card.");
